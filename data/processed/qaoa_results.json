@@ -1,0 +1,19 @@
+{
+  "selected_candidates": [
+    "GEN_A52E1BC0",
+    "GEN_2BBE51E3",
+    "GEN_71A3DA6E",
+    "GEN_FDBFC889",
+    "GEN_6E4A1C6D"
+  ],
+  "bitstring": "11110100000000000000",
+  "objective_value": -4.2341,
+  "classical_baseline": -4.2341,
+  "qaoa_parameters": {
+    "p": 1,
+    "optimizer": "COBYLA",
+    "seed": 42
+  },
+  "backend": "StatevectorSampler",
+  "runtime_seconds": 182.4
+}

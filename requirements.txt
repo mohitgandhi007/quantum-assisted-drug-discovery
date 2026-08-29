@@ -1,0 +1,18 @@
+fastapi>=0.111.0
+uvicorn>=0.29.0
+pydantic>=2.7.1
+python-dotenv>=1.0.1
+rdkit>=2024.9.2
+chembl_webresource_client>=0.10.9
+pandas>=2.2.2
+requests>=2.32.3
+qiskit>=1.1.0
+qiskit-aer>=0.14.2
+qiskit-optimization>=0.6.1
+docplex>=2.27.239
+pytest>=8.2.0
+numpy
+httpx
+# Open Babel and Vina
+# openbabel # Requires SWIG and Eigen3 or Conda
+# vina      # Requires Boost library (brew install boost) or Conda

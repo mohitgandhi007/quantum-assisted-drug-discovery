@@ -1,0 +1,622 @@
+{
+  "metadata": {
+    "pipeline_version": "1.0.0",
+    "timestamp_utc": "2026-08-29T17:02:35.254299+00:00",
+    "is_precomputed_demo": true,
+    "demo_warning": "These displayed results are a precomputed computational run for demonstration purposes. They represent computational hypotheses and require experimental validation.",
+    "configurations": {
+      "dataset_source": "ChEMBL EGFR (Target ID: CHEMBL203)",
+      "molecular_generation": "RDKit BRICS (Deterministic seed: 42)",
+      "scoring_metrics": [
+        "QED",
+        "ESOL",
+        "PAINS alerts",
+        "MW",
+        "LogP"
+      ],
+      "docking_configuration": {
+        "method": "AutoDock Vina (or Tanimoto similarity fallback)",
+        "receptor": "1M17",
+        "search_space_center": [
+          22.61,
+          4.41,
+          52.83
+        ],
+        "search_space_size": [
+          20,
+          20,
+          20
+        ]
+      },
+      "quantum_configuration": {
+        "formulation": "QUBO",
+        "solver": "QAOA",
+        "optimizer": "COBYLA",
+        "p": 1,
+        "seed": 42,
+        "backend": "Qiskit StatevectorSampler (Local Simulator)"
+      }
+    }
+  },
+  "quantum_results": {
+    "selected_candidates": [
+      "GEN_A52E1BC0",
+      "GEN_2BBE51E3",
+      "GEN_71A3DA6E",
+      "GEN_FDBFC889",
+      "GEN_6E4A1C6D"
+    ],
+    "bitstring": "11110100000000000000",
+    "objective_value": -4.2341,
+    "classical_baseline": -4.2341,
+    "qaoa_parameters": {
+      "p": 1,
+      "optimizer": "COBYLA",
+      "seed": 42
+    },
+    "backend": "StatevectorSampler",
+    "runtime_seconds": 182.4
+  },
+  "candidates": [
+    {
+      "candidate_id": "GEN_A52E1BC0",
+      "smiles": "O=[N+]([O-])c1cc(-c2cc(O)ccc2[N+](=O)[O-])ccc1O",
+      "properties": {
+        "qed": 0.655,
+        "esol": -3.425,
+        "molecular_weight": 276.2,
+        "logp": 2.581,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 6,
+        "rotatable_bonds": 3,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -8.231,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.7759090885706043,
+      "ranking": 1,
+      "quantum_selection_status": true,
+      "explanation": "Candidate GEN_A52E1BC0 was computationally evaluated and was prioritized by the quantum algorithm. It possesses a QED score of 0.655 and ESOL of -3.425, yielding a classical score of 0.7759090885706043. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -8.231 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_2BBE51E3",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccc(O)c([N+](=O)[O-])c2)ccc1O",
+      "properties": {
+        "qed": 0.655,
+        "esol": -3.425,
+        "molecular_weight": 276.2,
+        "logp": 2.581,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 6,
+        "rotatable_bonds": 3,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.743,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.6573977656393917,
+      "ranking": 2,
+      "quantum_selection_status": true,
+      "explanation": "Candidate GEN_2BBE51E3 was computationally evaluated and was prioritized by the quantum algorithm. It possesses a QED score of 0.655 and ESOL of -3.425, yielding a classical score of 0.6573977656393917. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.743 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_71A3DA6E",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccc(N3CCOCC3)[nH]2)ccc1O",
+      "properties": {
+        "qed": 0.667,
+        "esol": -3.166,
+        "molecular_weight": 289.29,
+        "logp": 2.132,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 5,
+        "rotatable_bonds": 3,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.474,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.6349134479364793,
+      "ranking": 3,
+      "quantum_selection_status": true,
+      "explanation": "Candidate GEN_71A3DA6E was computationally evaluated and was prioritized by the quantum algorithm. It possesses a QED score of 0.667 and ESOL of -3.166, yielding a classical score of 0.6349134479364793. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.474 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_FDBFC889",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccc(F)c(Cl)c2)ccc1O",
+      "properties": {
+        "qed": 0.665,
+        "esol": -4.229,
+        "molecular_weight": 267.64,
+        "logp": 3.76,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.699,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.6271659333829123,
+      "ranking": 4,
+      "quantum_selection_status": true,
+      "explanation": "Candidate GEN_FDBFC889 was computationally evaluated and was prioritized by the quantum algorithm. It possesses a QED score of 0.665 and ESOL of -4.229, yielding a classical score of 0.6271659333829123. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.699 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_AC1C9113",
+      "smiles": "O=[N+]([O-])c1cc(-c2cccc(Br)c2)ccc1O",
+      "properties": {
+        "qed": 0.678,
+        "esol": -4.404,
+        "molecular_weight": 294.1,
+        "logp": 3.73,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.504,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.6015419891874174,
+      "ranking": 5,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_AC1C9113 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.678 and ESOL of -4.404, yielding a classical score of 0.6015419891874174. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.504 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_6E4A1C6D",
+      "smiles": "Cc1cccc(-c2ccc(-c3ccc(O)c([N+](=O)[O-])c3)[nH]2)c1",
+      "properties": {
+        "qed": 0.559,
+        "esol": -4.729,
+        "molecular_weight": 294.31,
+        "logp": 4.271,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 3,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -8.629,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.5714285714285714,
+      "ranking": 6,
+      "quantum_selection_status": true,
+      "explanation": "Candidate GEN_6E4A1C6D was computationally evaluated and was prioritized by the quantum algorithm. It possesses a QED score of 0.559 and ESOL of -4.729, yielding a classical score of 0.5714285714285714. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -8.629 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_2FFDA9BF",
+      "smiles": "O=[N+]([O-])c1cc(-c2cccc(Cl)c2)ccc1O",
+      "properties": {
+        "qed": 0.653,
+        "esol": -4.059,
+        "molecular_weight": 249.65,
+        "logp": 3.621,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.539,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.5687078369734975,
+      "ranking": 7,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_2FFDA9BF was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.653 and ESOL of -4.059, yielding a classical score of 0.5687078369734975. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.539 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_39DF2B03",
+      "smiles": "Cc1cccc(-c2ccc(O)c([N+](=O)[O-])c2)c1",
+      "properties": {
+        "qed": 0.634,
+        "esol": -3.715,
+        "molecular_weight": 229.23,
+        "logp": 3.276,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.597,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.55581084759524,
+      "ranking": 8,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_39DF2B03 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.634 and ESOL of -3.715, yielding a classical score of 0.55581084759524. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.597 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_D3F97A6A",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccc(-c3ccccc3)[nH]2)ccc1O",
+      "properties": {
+        "qed": 0.563,
+        "esol": -4.475,
+        "molecular_weight": 280.28,
+        "logp": 3.963,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 3,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -8.383,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.5350512747207398,
+      "ranking": 9,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_D3F97A6A was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.563 and ESOL of -4.475, yielding a classical score of 0.5350512747207398. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -8.383 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_421407F2",
+      "smiles": "CN(C(=O)c1ccccc1)c1ccc(-c2ccc(O)c([N+](=O)[O-])c2)[nH]1",
+      "properties": {
+        "qed": 0.561,
+        "esol": -4.421,
+        "molecular_weight": 337.34,
+        "logp": 3.572,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 4,
+        "rotatable_bonds": 4,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -8.332,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.5207893515446435,
+      "ranking": 10,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_421407F2 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.561 and ESOL of -4.421, yielding a classical score of 0.5207893515446435. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -8.332 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_66FBD551",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccc(O)cc2)ccc1O",
+      "properties": {
+        "qed": 0.614,
+        "esol": -3.348,
+        "molecular_weight": 231.21,
+        "logp": 2.673,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 4,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.42,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.4846889006704196,
+      "ranking": 11,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_66FBD551 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.614 and ESOL of -3.348, yielding a classical score of 0.4846889006704196. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.42 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_4BE72015",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccc(-c3ccccn3)[nH]2)ccc1O",
+      "properties": {
+        "qed": 0.568,
+        "esol": -4.1,
+        "molecular_weight": 281.27,
+        "logp": 3.358,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 4,
+        "rotatable_bonds": 3,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -8.013,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.4775164735096135,
+      "ranking": 12,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_4BE72015 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.568 and ESOL of -4.1, yielding a classical score of 0.4775164735096135. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -8.013 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_9B7BC87F",
+      "smiles": "CN(C(=O)c1ccccn1)c1ccc(-c2ccc(O)c([N+](=O)[O-])c2)[nH]1",
+      "properties": {
+        "qed": 0.561,
+        "esol": -4.046,
+        "molecular_weight": 338.32,
+        "logp": 2.967,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 5,
+        "rotatable_bonds": 4,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -8.05,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.4726206427118197,
+      "ranking": 13,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_9B7BC87F was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.561 and ESOL of -4.046, yielding a classical score of 0.4726206427118197. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -8.05 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_F38C85C6",
+      "smiles": "CN(c1ccccc1)c1ccc(-c2ccc(O)c([N+](=O)[O-])c2)[nH]1",
+      "properties": {
+        "qed": 0.562,
+        "esol": -4.601,
+        "molecular_weight": 309.32,
+        "logp": 4.063,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 4,
+        "rotatable_bonds": 4,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -8.128,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.4638973525170435,
+      "ranking": 14,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_F38C85C6 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.562 and ESOL of -4.601, yielding a classical score of 0.4638973525170435. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -8.128 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_2FDF7C32",
+      "smiles": "CCN(C)c1ccc(-c2ccc(O)c([N+](=O)[O-])c2)[nH]1",
+      "properties": {
+        "qed": 0.655,
+        "esol": -3.358,
+        "molecular_weight": 261.28,
+        "logp": 2.752,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 4,
+        "rotatable_bonds": 4,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -6.879,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.451204105539673,
+      "ranking": 15,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_2FDF7C32 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.655 and ESOL of -3.358, yielding a classical score of 0.451204105539673. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -6.879 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_1FB1AFCF",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccccc2)ccc1O",
+      "properties": {
+        "qed": 0.618,
+        "esol": -3.467,
+        "molecular_weight": 215.21,
+        "logp": 2.967,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.263,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.4497184042116188,
+      "ranking": 16,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_1FB1AFCF was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.618 and ESOL of -3.467, yielding a classical score of 0.4497184042116188. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.263 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_B112B89D",
+      "smiles": "Cc1cc(C)c(-c2ccc(O)c([N+](=O)[O-])c2)[nH]1",
+      "properties": {
+        "qed": 0.617,
+        "esol": -3.461,
+        "molecular_weight": 232.24,
+        "logp": 2.912,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 3,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.258,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.4464282331632088,
+      "ranking": 17,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_B112B89D was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.617 and ESOL of -3.461, yielding a classical score of 0.4464282331632088. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.258 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_77890B6E",
+      "smiles": "CN(c1ccccn1)c1ccc(-c2ccc(O)c([N+](=O)[O-])c2)[nH]1",
+      "properties": {
+        "qed": 0.568,
+        "esol": -4.226,
+        "molecular_weight": 310.31,
+        "logp": 3.458,
+        "h_bond_donors": 2,
+        "h_bond_acceptors": 5,
+        "rotatable_bonds": 4,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -7.913,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.4464054277850253,
+      "ranking": 18,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_77890B6E was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.568 and ESOL of -4.226, yielding a classical score of 0.4464054277850253. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -7.913 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_EBCC2714",
+      "smiles": "O=[N+]([O-])c1cc(-c2ccccn2)ccc1O",
+      "properties": {
+        "qed": 0.617,
+        "esol": -3.092,
+        "molecular_weight": 216.2,
+        "logp": 2.362,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 4,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -6.911,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.3821491599840167,
+      "ranking": 19,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_EBCC2714 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.617 and ESOL of -3.092, yielding a classical score of 0.3821491599840167. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -6.911 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    },
+    {
+      "candidate_id": "GEN_67AA3F26",
+      "smiles": "O=[N+]([O-])c1cc(N2CCOCC2)ccc1O",
+      "properties": {
+        "qed": 0.602,
+        "esol": -2.092,
+        "molecular_weight": 224.22,
+        "logp": 1.137,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 5,
+        "rotatable_bonds": 2,
+        "pains_alert_count": 0,
+        "pains_flag": false
+      },
+      "binding_evidence": {
+        "method": "AutoDock Vina (Docking)",
+        "score": -6.276,
+        "score_direction": "negative_is_better",
+        "reference": "data/processed/receptor.pdbqt",
+        "status": "SUCCESS",
+        "limitations": "Empirical scoring function",
+        "error_message": null
+      },
+      "classical_score": 0.2460984393757501,
+      "ranking": 20,
+      "quantum_selection_status": false,
+      "explanation": "Candidate GEN_67AA3F26 was computationally evaluated and was not prioritized by the quantum algorithm. It possesses a QED score of 0.602 and ESOL of -2.092, yielding a classical score of 0.2460984393757501. Docking-based evidence (AutoDock Vina (Docking)) yielded a predicted score of -6.276 (negative_is_better). These findings represent purely computational hypotheses and require experimental validation. This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
+    }
+  ]
+}
