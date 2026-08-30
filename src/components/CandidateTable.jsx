@@ -103,19 +103,25 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
                   key={candidate.id}
                   onClick={() => onSelectCandidate(candidate)}
                   className={`cursor-pointer transition-colors hover:bg-slate-800/40 group ${
-                    isSelected ? 'bg-slate-800/75 border-l-2 border-emerald-500' : 'bg-transparent'
+                    isSelected 
+                      ? 'bg-slate-800/75 border-l-2 border-emerald-500' 
+                      : candidate.is_reference
+                        ? 'bg-amber-500/[0.02] border-l-2 border-amber-500/20'
+                        : 'bg-transparent'
                   }`}
                 >
                   {/* Rank */}
                   <td className="py-3 px-4 text-center font-mono font-bold text-slate-300">
                     <span className={`inline-flex items-center justify-center h-6 w-6 rounded-full text-xs ${
-                      candidate.rank === 1
-                        ? 'bg-amber-400/10 text-amber-400 border border-amber-400/30'
-                        : candidate.rank === 2
-                          ? 'bg-slate-300/10 text-slate-300 border border-slate-300/20'
-                          : 'text-slate-500'
+                      candidate.is_reference
+                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold'
+                        : candidate.rank === 1
+                          ? 'bg-amber-400/10 text-amber-400 border border-amber-400/30'
+                          : candidate.rank === 2
+                            ? 'bg-slate-300/10 text-slate-300 border border-slate-300/20'
+                            : 'text-slate-500'
                     }`}>
-                      {candidate.rank}
+                      {candidate.is_reference ? '★' : candidate.rank}
                     </span>
                   </td>
 
@@ -125,9 +131,15 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
                       <MoleculeImage smiles={candidate.smiles} id={candidate.id} />
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-slate-200">
+                          <span className="font-mono text-xs font-bold text-slate-200 flex items-center gap-1">
+                            {candidate.is_reference && <span className="text-amber-400">★</span>}
                             COMP-{candidate.id.toUpperCase()}
                           </span>
+                          {candidate.is_reference && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                              Reference
+                            </span>
+                          )}
                           {candidate.quantum_selected && (
                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 animate-pulse">
                               ⚛️ QUANTUM

@@ -4,6 +4,8 @@ import PipelineStages from './components/PipelineStages';
 import CandidateTable from './components/CandidateTable';
 import MoleculeViewer from './components/MoleculeViewer';
 import EmptyState from './components/EmptyState';
+import CandidateDetails from './components/CandidateDetails';
+import Disclaimer from './components/Disclaimer';
 import { mockPipelineStages } from './api/mockData';
 import { getCandidates, USE_MOCK } from './api/api';
 
@@ -265,62 +267,8 @@ export default function App() {
                     <MoleculeViewer pdbId="1M17" />
                   </div>
 
-                  {/* Properties and Bioinformatic Explanation Card */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
-                        <div>
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Selected Lead Details</span>
-                          <h3 className="text-base font-bold text-slate-200 font-mono mt-0.5">
-                            COMP-{selectedCandidate.id.toUpperCase()}
-                          </h3>
-                        </div>
-                        {selectedCandidate.quantum_selected && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-400/15 text-cyan-400 border border-cyan-400/25">
-                            Quantum Prime Lead
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Bio-properties key value list */}
-                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs font-mono mb-6">
-                        <div className="text-slate-500">Docking Score:</div>
-                        <div className="text-right text-emerald-400 font-bold">{selectedCandidate.docking_score.toFixed(1)} kcal/mol</div>
-                        
-                        <div className="text-slate-500">Drug-likeness (QED):</div>
-                        <div className="text-right text-slate-200">{selectedCandidate.qed.toFixed(2)}</div>
-                        
-                        <div className="text-slate-500">Solubility (ESOL):</div>
-                        <div className="text-right text-slate-200">{selectedCandidate.esol.toFixed(1)}</div>
-                        
-                        <div className="text-slate-500">Toxicity Flags:</div>
-                        <div className="text-right">
-                          {selectedCandidate.tox_flags.length === 0 ? (
-                            <span className="text-emerald-400">None</span>
-                          ) : (
-                            <span className="text-rose-400">{selectedCandidate.tox_flags.join(', ')}</span>
-                          )}
-                        </div>
-
-                        <div className="text-slate-500">Overall Discovery Score:</div>
-                        <div className="text-right text-cyan-400 font-bold">{selectedCandidate.overall_score.toFixed(1)} / 100</div>
-                      </div>
-
-                      {/* AI explanation block */}
-                      <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-3 text-xs leading-relaxed">
-                        <h4 className="font-semibold text-slate-400 uppercase tracking-wider text-[10px] mb-1.5 flex items-center gap-1">
-                          ✨ AI Explanation Profile
-                        </h4>
-                        <p className="text-slate-300">
-                          {getExplanation(selectedCandidate)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 text-[10px] text-slate-500">
-                      Structure loaded corresponds to ligand docking site on target protein receptor.
-                    </div>
-                  </div>
+                  {/* Detailed candidate profile inspector */}
+                  <CandidateDetails candidate={selectedCandidate} />
                   
                 </div>
               )}
@@ -329,6 +277,9 @@ export default function App() {
 
         </section>
       </main>
+
+      {/* persistent regulatory & validation disclaimer banner */}
+      <Disclaimer />
 
       {/* Footer */}
       <footer className="mt-auto border-t border-slate-900 bg-slate-950 px-6 py-4 text-center text-xs text-slate-600 font-mono">
