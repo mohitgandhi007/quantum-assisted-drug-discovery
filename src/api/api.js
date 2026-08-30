@@ -1,7 +1,7 @@
 import { mockCandidates } from './mockData';
 
 // Global flag to toggle between mock data and the live FastAPI backend
-export const USE_MOCK = true;
+export const USE_MOCK = false;
 
 // Centralized Backend URL
 export const API_BASE_URL = "http://localhost:8000";
@@ -10,7 +10,7 @@ export const API_BASE_URL = "http://localhost:8000";
  * Fetch candidate molecules for the drug discovery target.
  * Uses the agreed endpoint from the project plan when USE_MOCK is false.
  */
-export async function getCandidates() {
+export async function getCandidates(runId) {
   if (USE_MOCK) {
     // Simulate minor network delay for realistic visual feedback
     await new Promise((resolve) => setTimeout(resolve, 800));
@@ -18,7 +18,10 @@ export async function getCandidates() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/discover/test/candidates`);
+    const url = runId 
+      ? `${API_BASE_URL}/api/discover/${runId}/candidates` 
+      : `${API_BASE_URL}/api/discover/test/candidates`;
+    const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Server returned status ${response.status}`);
     }

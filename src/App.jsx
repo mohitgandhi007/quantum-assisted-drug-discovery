@@ -15,6 +15,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [hasDiscovered, setHasDiscovered] = useState(false);
 
   // Generate automated clinical explanation for the selected candidate
   const getExplanation = (candidate) => {
@@ -46,6 +47,7 @@ export default function App() {
     setCurrentStageIndex(0);
     setError(null);
     setLogs([]);
+    setHasDiscovered(false);
 
     addLog('SYSTEM: Initializing EGFR receptor lead optimization pipeline.');
     addLog('RESEARCH: Querying RCSB database for target structure: PDB 1M17.');
@@ -67,8 +69,11 @@ export default function App() {
         getCandidates()
           .then((data) => {
             setCandidates(data);
+            setHasDiscovered(true);
             // Default select the top rank candidate (or quantum selected)
-            const defaultSelected = data.find((c) => c.quantum_selected) || data[0];
+            const defaultSelected = data && data.length > 0
+              ? (data.find((c) => c.quantum_selected) || data[0])
+              : null;
             setSelectedCandidate(defaultSelected);
             addLog('SYSTEM: Successfully loaded candidate structures and scores.');
             setLoading(false);
@@ -178,8 +183,25 @@ export default function App() {
         <section className="lg:col-span-8 flex flex-col gap-6">
           
           {/* Show empty state when pipeline hasn't run and no candidates exist */}
-          {!isPipelineRunning && candidates.length === 0 && !loading && !error && (
+          {!isPipelineRunning && !hasDiscovered && candidates.length === 0 && !loading && !error && (
             <EmptyState onStartDiscovery={handleStartDiscovery} isRunning={isPipelineRunning} />
+          )}
+
+          {/* Show empty candidates results state when discovery produces nothing */}
+          {!isPipelineRunning && hasDiscovered && candidates.length === 0 && !loading && !error && (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center shadow-lg my-6 max-w-2xl mx-auto flex flex-col items-center">
+              <span className="text-slate-500 text-3xl mb-3">🔍</span>
+              <h3 className="text-sm font-semibold text-slate-300">No candidate molecules available yet.</h3>
+              <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                The discovery pipeline completed, but no lead structures were returned. Make sure the generation stage produced valid candidates.
+              </p>
+              <button
+                onClick={handleStartDiscovery}
+                className="mt-5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded border border-slate-700 transition cursor-pointer"
+              >
+                Re-run Discovery
+              </button>
+            </div>
           )}
 
           {/* Error Message Panel */}
@@ -214,9 +236,9 @@ export default function App() {
                     {log}
                   </div>
                 ))}
-                {isPipelineRunning && (
+                {(isPipelineRunning || loading) && (
                   <div className="text-cyan-400 animate-pulse flex items-center gap-1 mt-2">
-                    <span>█</span> Running calculation node...
+                    <span>█</span> {loading ? 'Querying lead candidate data nodes...' : 'Running calculation node...'}
                   </div>
                 )}
               </div>
