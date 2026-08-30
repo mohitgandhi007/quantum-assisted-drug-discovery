@@ -1,6 +1,7 @@
 import logging
 import os
 import pandas as pd
+import json
 from typing import List, Dict, Optional
 from chembl_webresource_client.new_client import new_client
 from rdkit import Chem
@@ -79,6 +80,9 @@ class ChEMBLDataPipeline:
         logger.info("Validating molecules and removing duplicates...")
         valid_records = []
         seen_smiles = set()
+        
+        parsed_count = 0
+        raw_count = len(activities)
 
         for act in activities:
             smiles = act["smiles"]
@@ -88,6 +92,7 @@ class ChEMBLDataPipeline:
             if mol is None:
                 continue
                 
+            parsed_count += 1
             canonical_smiles = Chem.MolToSmiles(mol)
             
             if canonical_smiles in seen_smiles:
@@ -99,7 +104,19 @@ class ChEMBLDataPipeline:
             valid_records.append(act)
             
         df = pd.DataFrame(valid_records)
-        logger.info(f"Retained {len(df)} valid, unique molecules.")
+        unique_count = len(df)
+        logger.info(f"Retained {unique_count} valid, unique molecules from {raw_count} raw.")
+        
+        # Save metadata
+        metadata = {
+            "raw_chembl_count": raw_count,
+            "parsed_count": parsed_count,
+            "unique_count": unique_count
+        }
+        meta_path = os.path.join(os.path.dirname(self.output_path), "chembl_metadata.json")
+        with open(meta_path, "w") as f:
+            json.dump(metadata, f, indent=2)
+            
         return df
 
     def run_pipeline(self, limit: int = 100) -> pd.DataFrame:
@@ -118,7 +135,7 @@ class ChEMBLDataPipeline:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     pipeline = ChEMBLDataPipeline()
-    # Limit to 50 for rapid testing
-    df = pipeline.run_pipeline(limit=50)
+    # Pull up to 1000 active unique molecules for EGFR
+    df = pipeline.run_pipeline(limit=1000)
     print("\nSample of final dataset:")
     print(df[["molecule_chembl_id", "canonical_smiles", "pchembl_value", "activity_value", "activity_units"]].head())

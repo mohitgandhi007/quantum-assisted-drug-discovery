@@ -56,7 +56,9 @@ def get_candidate(candidate_id: str):
         raise HTTPException(status_code=404, detail="Candidate not found")
     
     # Generate scientific explanation
-    candidate["explanation"] = explanation_service.generate_explanation(candidate)
+    explanation_res = explanation_service.generate_explanation(candidate)
+    candidate["explanation"] = explanation_res["text"]
+    candidate["explanation_source"] = explanation_res["source"]
     
     return candidate
 

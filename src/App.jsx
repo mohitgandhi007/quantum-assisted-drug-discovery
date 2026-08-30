@@ -59,17 +59,36 @@ export default function App() {
           
           if (data.candidates && data.candidates.length > 0) {
             const defaultSelected = data.candidates.find((c) => c.quantum_selection_status) || data.candidates[0];
-            const fullDetails = await getCandidateDetails(defaultSelected.candidate_id);
-            setSelectedCandidate(fullDetails || defaultSelected);
+            try {
+                const fullDetails = await getCandidateDetails(defaultSelected.candidate_id);
+                setSelectedCandidate(fullDetails || defaultSelected);
+                addLog('SYSTEM: Successfully loaded candidate structures and multi-objective scores.');
+                setAppStatus('COMPLETED');
+            } catch (explErr) {
+                // If only the explanation fails, the pipeline still completed successfully, but AI explanation failed.
+                setError(explErr.message);
+                addLog(`ERROR: ${explErr.message}`);
+                setSelectedCandidate(defaultSelected);
+                setAppStatus('COMPLETED'); 
+                // We keep appStatus as completed because the overall pipeline data loaded.
+                // We'll let the user see the data without the explanation, or they can click "Use Fallback".
+            }
+          } else {
+             addLog('SYSTEM: Pipeline returned no candidates.');
+             setAppStatus('COMPLETED');
           }
-          
-          addLog('SYSTEM: Successfully loaded candidate structures and multi-objective scores.');
-          setAppStatus('COMPLETED');
           setActiveStageIndex(0); // Select the first stage to view
         } catch (err) {
           setError(err.message);
           addLog(`ERROR: ${err.message}`);
           setAppStatus('ERROR');
+          // Important: Update the stuck visual stage to show it didn't complete
+          setPipelineData(prev => {
+             if (!prev) return prev;
+             const newStages = [...prev.stages];
+             newStages[visualIndex - 1].status = 'FAILED';
+             return { ...prev, stages: newStages };
+          });
         }
         return;
       }
@@ -125,6 +144,7 @@ export default function App() {
       setSelectedCandidate(fullDetails || candidate);
     } catch (e) {
       console.error(e);
+      addLog(`ERROR: Failed to load details for ${candidate.candidate_id}: ${e.message}`);
       setSelectedCandidate(candidate);
     }
   };
@@ -306,10 +326,17 @@ export default function App() {
                       {/* Explanation block */}
                       {selectedCandidate.explanation && (
                          <div className="bg-slate-950/60 border border-quantovia-charcoal rounded-lg p-3 text-xs leading-relaxed">
-                          <h4 className="font-semibold text-slate-400 uppercase tracking-wider text-[10px] mb-1.5 flex items-center gap-1">
-                            🤖 AI Candidate Profile
-                          </h4>
-                          <p className="text-slate-300 whitespace-pre-wrap">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <h4 className="font-semibold text-slate-400 uppercase tracking-wider text-[10px] flex items-center gap-1">
+                              🤖 AI Candidate Profile
+                            </h4>
+                            {selectedCandidate.explanation_source && (
+                               <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${selectedCandidate.explanation_source.includes('AI') ? 'bg-indigo-900/40 text-indigo-300 border border-indigo-700/50' : 'bg-slate-800 text-slate-400 border border-slate-600'}`}>
+                                 {selectedCandidate.explanation_source}
+                               </span>
+                            )}
+                          </div>
+                          <p className="text-slate-300 whitespace-pre-wrap mt-2 border-t border-quantovia-charcoal/50 pt-2">
                             {selectedCandidate.explanation}
                           </p>
                         </div>

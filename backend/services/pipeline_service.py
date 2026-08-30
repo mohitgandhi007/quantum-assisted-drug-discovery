@@ -121,16 +121,20 @@ class PipelineService:
         }
         
     def get_detailed_pipeline_response(self) -> Dict[str, Any]:
-        # Compute summary metrics from raw files
-        input_ligands = 0
-        if os.path.exists(self.egfr_ligands_path):
-            input_ligands = len(pd.read_csv(self.egfr_ligands_path))
-            
-        gen_meta = {"raw_count": 0, "valid_count": 0, "final_count": 0} # final_count is unique
+        # Gather Chembl Fetcher Metadata
+        chembl_meta = {"raw_chembl_count": 0, "parsed_count": 0, "unique_count": 0}
+        chembl_meta_path = os.path.join(self.data_dir, "chembl_metadata.json")
+        if os.path.exists(chembl_meta_path):
+            with open(chembl_meta_path, "r") as f:
+                chembl_meta = json.load(f)
+                
+        # Gather Generation Metadata
+        gen_meta = {"raw_count": 0, "valid_count": 0, "final_count": 0, "duplicate_count": 0}
         if os.path.exists(self.generation_metadata_path):
             with open(self.generation_metadata_path, "r") as f:
                 gen_meta = json.load(f)
                 
+        # Gather Diversity/Property Metadata
         div_meta = {"property_passed_count": 0, "diverse_count": 0}
         if os.path.exists(self.diversity_metadata_path):
             with open(self.diversity_metadata_path, "r") as f:
@@ -145,30 +149,58 @@ class PipelineService:
             
         cands = self.get_all_candidates()
         
+        # Build 12 metric summary
+        summary = {
+            "raw_chembl_records": chembl_meta.get("raw_chembl_count", 0),
+            "parsed_ligands": chembl_meta.get("parsed_count", 0),
+            "unique_ligands": chembl_meta.get("unique_count", 0),
+            "brics_fragments": 0, # Cannot be exactly extracted without saving, let's keep it at 0 or update later
+            "raw_generated": gen_meta.get("raw_count", 0),
+            "valid_candidates": gen_meta.get("valid_count", 0),
+            "deduplicated_candidates": gen_meta.get("final_count", 0),
+            "property_passed_candidates": div_meta.get("property_passed_count", 0),
+            "diverse_candidates": div_meta.get("diverse_count", 0),
+            "docked_candidates": docked,
+            "failed_docking": failed_docking,
+            "classical_top_candidates": len(cands),
+            "quantum_selected_candidates": len(self.quantum_result_cache["selected_candidates"]) if self.quantum_result_cache else 0
+        }
+        
+        # Invariants (Assert logic flow)
+        assert summary["unique_ligands"] <= summary["parsed_ligands"], "Logical Invariant failed: Unique Ligands > Parsed"
+        assert summary["parsed_ligands"] <= summary["raw_chembl_records"], "Logical Invariant failed: Parsed > Raw ChEMBL"
+        assert summary["valid_candidates"] <= summary["raw_generated"], "Logical Invariant failed: Valid > Raw Generated"
+        assert summary["deduplicated_candidates"] <= summary["valid_candidates"], "Logical Invariant failed: Deduplicated > Valid"
+        assert summary["property_passed_candidates"] <= div_meta.get("initial_scored_count", 0) + 1, "Logical Invariant failed: Property Passed > Scored"
+        assert summary["diverse_candidates"] <= summary["property_passed_candidates"], "Logical Invariant failed: Diverse > Property Passed"
+        assert summary["docked_candidates"] <= summary["diverse_candidates"], "Logical Invariant failed: Docked > Diverse"
+        assert summary["classical_top_candidates"] <= summary["docked_candidates"] + summary["failed_docking"], "Logical Invariant failed: Classical Top > Total Scored"
+        assert summary["quantum_selected_candidates"] <= summary["classical_top_candidates"], "Logical Invariant failed: Quantum Selected > Classical Top"
+        
         stages = [
             {
                 "name": "Target Validation",
                 "status": "COMPLETED",
                 "message": "Target structures successfully prepared.",
-                "details": {"pdb": "1M17", "num_ligands": input_ligands}
+                "details": {"pdb": "1M17", "num_ligands": summary["unique_ligands"]}
             },
             {
                 "name": "Molecular Generation",
                 "status": "COMPLETED",
                 "message": "BRICS generation finished.",
-                "details": {"method": "BRICS", "generated": gen_meta.get("raw_count", 0)}
+                "details": {"method": "BRICS", "generated": summary["raw_generated"]}
             },
             {
                 "name": "Molecular Properties",
                 "status": "COMPLETED",
                 "message": "ADMET/QED evaluation completed.",
-                "details": {"passed": div_meta.get("property_passed_count", 0)}
+                "details": {"passed": summary["property_passed_candidates"]}
             },
             {
                 "name": "Diversity Selection",
                 "status": "COMPLETED",
                 "message": "MaxMin picker completed.",
-                "details": {"diverse": div_meta.get("diverse_count", 0)}
+                "details": {"diverse": summary["diverse_candidates"]}
             },
             {
                 "name": "Docking Simulation",
@@ -180,13 +212,13 @@ class PipelineService:
                 "name": "Classical Ranking",
                 "status": "COMPLETED",
                 "message": "Candidates prioritized.",
-                "details": {"top_candidates": len(cands)}
+                "details": {"top_candidates": summary["classical_top_candidates"]}
             },
             {
                 "name": "Quantum Optimization",
                 "status": "COMPLETED" if self.quantum_result_cache else "PENDING",
                 "message": "QAOA Formulation executed." if self.quantum_result_cache else "Awaiting Quantum.",
-                "details": {"selected": len(self.quantum_result_cache["selected_candidates"])} if self.quantum_result_cache else None
+                "details": {"selected": summary["quantum_selected_candidates"]} if self.quantum_result_cache else None
             },
             {
                 "name": "AI Explanation",
@@ -194,19 +226,6 @@ class PipelineService:
                 "message": "LLM Explanations generated."
             }
         ]
-
-        summary = {
-            "input_ligands": input_ligands,
-            "generated": gen_meta.get("raw_count", 0),
-            "valid": gen_meta.get("valid_count", 0),
-            "unique": gen_meta.get("final_count", 0),
-            "property_passed": div_meta.get("property_passed_count", 0),
-            "diverse": div_meta.get("diverse_count", 0),
-            "docked": docked,
-            "failed_docking": failed_docking,
-            "classical_top": len(cands),
-            "quantum_selected": len(self.quantum_result_cache["selected_candidates"]) if self.quantum_result_cache else 0
-        }
 
         return {
             "run_id": f"RUN_{str(uuid.uuid4())[:8].upper()}",

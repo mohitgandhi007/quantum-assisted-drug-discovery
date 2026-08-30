@@ -49,7 +49,7 @@ def main():
     
     # 2. Every candidate has provenance
     df_gen = pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "generated_candidates.csv"))
-    assert not df_gen["parent_ids"].isnull().any(), "Rule 2 Failed: Missing provenance"
+    assert not df_gen["source_ligand_ids"].isnull().any(), "Rule 2 Failed: Missing provenance"
     
     # 4, 5, 6. QAOA Result feasible, classical baseline identical, exactly 5 selected
     with open(os.path.join(config.PROCESSED_DATA_DIR, "qaoa_results.json"), "r") as f:

@@ -18,12 +18,13 @@ export async function getCandidates() {
   try {
     const response = await fetch(`${API_BASE_URL}/candidates`);
     if (!response.ok) {
-      throw new Error(`Server returned status ${response.status}`);
+      const errText = await response.text();
+      throw new Error(`Server Error ${response.status}: ${errText}`);
     }
     return await response.json();
   } catch (error) {
     console.error("Error fetching candidates from FastAPI backend:", error);
-    throw new Error("Unable to connect to discovery backend.");
+    throw new Error(error.message || "Unable to connect to discovery backend.");
   }
 }
 
@@ -32,9 +33,16 @@ export async function getCandidates() {
  */
 export async function getCandidateDetails(candidateId) {
   if (USE_MOCK) return null;
-  const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}`);
-  if (!response.ok) throw new Error("Failed to fetch candidate details.");
-  return await response.json();
+  try {
+    const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}`);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errText}`);
+    }
+    return await response.json();
+  } catch (err) {
+    throw new Error(`Explanation Failed: ${err.message || 'Network error'}`);
+  }
 }
 
 /**
@@ -42,9 +50,16 @@ export async function getCandidateDetails(candidateId) {
  */
 export async function runPipeline() {
   if (USE_MOCK) return { status: "READY" };
-  const response = await fetch(`${API_BASE_URL}/pipeline/run`, { method: "POST" });
-  if (!response.ok) throw new Error("Failed to run pipeline.");
-  return await response.json();
+  try {
+    const response = await fetch(`${API_BASE_URL}/pipeline/run`, { method: "POST" });
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Pipeline API returned HTTP ${response.status}: ${errText}`);
+    }
+    return await response.json();
+  } catch (err) {
+    throw new Error(err.message || "Network error while starting pipeline.");
+  }
 }
 
 /**

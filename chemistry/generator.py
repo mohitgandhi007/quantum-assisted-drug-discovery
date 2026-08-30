@@ -104,12 +104,19 @@ class BRICSGenerator:
             parent_ids_str = ";".join(sorted(list(parents)))
             candidate_id = f"GEN_{hashlib.sha256(gen_smiles.encode()).hexdigest()[:8].upper()}"
             
+            source_frags_str = ";".join(sorted(list(gen_frags)))
+            
             candidates.append({
                 "candidate_id": candidate_id,
                 "smiles": gen_smiles,
-                "parent_ids": parent_ids_str,
+                "source_fragments": source_frags_str,
+                "source_ligand_ids": parent_ids_str,
                 "generation_method": "BRICS",
-                "validity_status": True
+                "validity_status": True,
+                "property_status": "pending",
+                "docking_status": "pending",
+                "classical_rank": None,
+                "quantum_selected": False
             })
             
             # Early stopping if we hit the limit after filtering

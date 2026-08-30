@@ -17,12 +17,14 @@ logger = logging.getLogger(__name__)
 class ExplanationService:
     def __init__(self):
         self.api_key = os.environ.get("GEMINI_API_KEY")
+        self.client = None
         if self.api_key and HAS_GENAI:
-            self.client = genai.Client(api_key=self.api_key)
-        else:
-            self.client = None
+            try:
+                self.client = genai.Client(api_key=self.api_key)
+            except Exception as e:
+                logger.error(f"Failed to initialize GenAI client: {e}")
 
-    def generate_explanation(self, candidate_data: Dict[str, Any]) -> str:
+    def generate_explanation(self, candidate_data: Dict[str, Any]) -> Dict[str, str]:
         """
         Generates a scientific explanation for a candidate using an LLM.
         Falls back to a structured template if the LLM is unavailable or fails.
@@ -59,33 +61,49 @@ class ExplanationService:
                 logger.warning("LLM output contained unverified numbers. Using fallback.")
                 return self._generate_fallback(candidate_data)
                 
-            return output
+            return {"text": output, "source": "AI Generated"}
             
         except Exception as e:
             logger.error(f"LLM generation failed: {e}. Using fallback.")
             return self._generate_fallback(candidate_data)
 
-    def _generate_fallback(self, c: Dict[str, Any]) -> str:
+    def _generate_fallback(self, c: Dict[str, Any]) -> Dict[str, str]:
         """Fallback explanation if the LLM is unavailable."""
         props = c.get("properties", {})
         bind = c.get("binding_evidence", {}) or {}
         
-        q_status = "was prioritized" if c.get("quantum_selection_status") else "was not prioritized"
+        q_status = "selected" if c.get("quantum_selection_status") else "not selected"
         
         explanation = (
-            f"Candidate {c.get('candidate_id')} was computationally evaluated and {q_status} by the quantum algorithm. "
-            f"It possesses a QED score of {props.get('qed', 'N/A')} and ESOL of {props.get('esol', 'N/A')}, yielding a classical score of {c.get('classical_score', 'N/A')}. "
+            f"Candidate {c.get('candidate_id')} was computationally evaluated and {q_status} by the quantum algorithm as part of the final diverse subset. "
+            f"It possesses a QED score of {props.get('qed', 'N/A')} and ESOL of {props.get('esol', 'N/A')}. "
+            f"Its molecular weight is {props.get('molecular_weight', 'N/A')} with a LogP of {props.get('logp', 'N/A')}. "
         )
         
+        lipinski_violations = sum([
+            1 if props.get('molecular_weight', 0) > 500 else 0,
+            1 if props.get('logp', 0) > 5 else 0,
+            1 if props.get('h_bond_donors', 0) > 5 else 0,
+            1 if props.get('h_bond_acceptors', 0) > 10 else 0
+        ])
+        
+        explanation += f"It has {lipinski_violations} Lipinski violations. "
+        
+        pains_alerts = props.get('pains_alert_count', 0)
+        explanation += f"Structural alerts (PAINS/Brenk): {'None' if pains_alerts == 0 else f'{pains_alerts} alerts'}. "
+        
+        if c.get("classical_ranking"):
+            explanation += f"It achieved a classical rank of #{c.get('classical_ranking')}. "
+            
         if bind.get("method"):
-            explanation += f"Docking-based evidence ({bind.get('method')}) yielded a predicted score of {bind.get('score', 'N/A')} ({bind.get('score_direction', '')}). "
+            explanation += f"Docking-based evidence ({bind.get('method')}) yielded a predicted score of {bind.get('score', 'N/A')}. "
             
         explanation += (
-            "These findings represent purely computational hypotheses and require experimental validation. "
+            "\nThese findings represent purely computational hypotheses and require experimental validation. "
             "This molecule is predicted to bind EGFR but is not an approved drug and has not been tested in humans."
         )
         
-        return explanation
+        return {"text": explanation, "source": "Computational Fallback"}
         
     def _verify_numbers(self, text: str, data: Dict[str, Any]) -> bool:
         """

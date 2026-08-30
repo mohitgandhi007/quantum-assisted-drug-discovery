@@ -29,7 +29,15 @@ class CandidateResponse(BaseModel):
     classical_score: Optional[float] = None
     ranking: Optional[int] = None
     quantum_selection_status: bool = False
+    source_fragments: Optional[str] = None
+    source_ligand_ids: Optional[str] = None
+    generation_method: Optional[str] = None
+    validity_status: Optional[bool] = None
+    property_status: Optional[str] = None
+    docking_status: Optional[str] = None
+    classical_rank: Optional[int] = None
     explanation: Optional[str] = None
+    explanation_source: Optional[str] = None
 
 class QAOAParameters(BaseModel):
     p: int
@@ -65,15 +73,19 @@ class PipelineStageSchema(BaseModel):
     details: Optional[Dict[str, Any]] = None
 
 class PipelineSummarySchema(BaseModel):
-    input_ligands: int
-    generated: int
-    valid: int
-    diverse: int
-    property_passed: int
-    docked: int
+    raw_chembl_records: int
+    parsed_ligands: int
+    unique_ligands: int
+    brics_fragments: int
+    raw_generated: int
+    valid_candidates: int
+    deduplicated_candidates: int
+    property_passed_candidates: int
+    diverse_candidates: int
+    docked_candidates: int
     failed_docking: int
-    classical_top: int
-    quantum_selected: int
+    classical_top_candidates: int
+    quantum_selected_candidates: int
 
 class DetailedPipelineResponse(BaseModel):
     run_id: str

@@ -18,7 +18,7 @@ class TestBRICSGenerator(unittest.TestCase):
         df_out = self.generator.generate(self.input_data)
         
         # Verify schema
-        expected_cols = {"candidate_id", "smiles", "parent_ids", "generation_method", "validity_status"}
+        expected_cols = {"candidate_id", "smiles", "source_ligand_ids", "generation_method", "validity_status"}
         self.assertTrue(expected_cols.issubset(df_out.columns))
         
         if len(df_out) > 0:
