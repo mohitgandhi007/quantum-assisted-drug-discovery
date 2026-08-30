@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@theme {
+  --color-quantovia-charcoal: #323D47;
+  --color-quantovia-teal: #61929A;
+  --color-quantovia-deep-teal: #437B9B;
+  --color-quantovia-sage: #689159;
+  --color-quantovia-lime-sage: #92B157;
+  --color-quantovia-pale-sage: #D4E0DB;
+  --color-quantovia-off-white: #F8F9FA;
+}

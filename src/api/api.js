@@ -1,29 +1,26 @@
 import { mockCandidates } from './mockData';
 
 // Global flag to toggle between mock data and the live FastAPI backend
-export const USE_MOCK = true;
+export const USE_MOCK = false;
 
 // Centralized Backend URL
 export const API_BASE_URL = "http://localhost:8000";
 
 /**
  * Fetch candidate molecules for the drug discovery target.
- * Uses the agreed endpoint from the project plan when USE_MOCK is false.
  */
 export async function getCandidates() {
   if (USE_MOCK) {
-    // Simulate minor network delay for realistic visual feedback
     await new Promise((resolve) => setTimeout(resolve, 800));
     return mockCandidates;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/discover/test/candidates`);
+    const response = await fetch(`${API_BASE_URL}/candidates`);
     if (!response.ok) {
       throw new Error(`Server returned status ${response.status}`);
     }
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error fetching candidates from FastAPI backend:", error);
     throw new Error("Unable to connect to discovery backend.");
@@ -31,21 +28,31 @@ export async function getCandidates() {
 }
 
 /**
- * Optional pipeline detail fetching if backend implements it.
- * Defaults to mock data for demo robustness.
+ * Fetch a specific candidate with explanation
  */
-export async function getPipelineStatus() {
-  if (USE_MOCK) {
-    return { status: "success" };
-  }
-  // Implement a status check endpoint if needed by Person 1
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/discover/status`);
-    if (response.ok) {
-      return await response.json();
-    }
-    return { status: "unknown" };
-  } catch (e) {
-    return { status: "error", message: e.message };
-  }
+export async function getCandidateDetails(candidateId) {
+  if (USE_MOCK) return null;
+  const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}`);
+  if (!response.ok) throw new Error("Failed to fetch candidate details.");
+  return await response.json();
+}
+
+/**
+ * Trigger pipeline run (returns DetailedPipelineResponse)
+ */
+export async function runPipeline() {
+  if (USE_MOCK) return { status: "READY" };
+  const response = await fetch(`${API_BASE_URL}/pipeline/run`, { method: "POST" });
+  if (!response.ok) throw new Error("Failed to run pipeline.");
+  return await response.json();
+}
+
+/**
+ * Fetch Quantum Results
+ */
+export async function getQuantumResults() {
+  if (USE_MOCK) return null;
+  const response = await fetch(`${API_BASE_URL}/quantum/result`);
+  if (!response.ok) throw new Error("Failed to fetch quantum results.");
+  return await response.json();
 }

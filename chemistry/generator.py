@@ -2,8 +2,10 @@ import logging
 import pandas as pd
 from typing import List, Dict, Set, Tuple
 from rdkit import Chem
-from rdkit.Chem import BRICS, AllChem, DataStructs
+from rdkit.Chem import BRICS
 import uuid
+import hashlib
+import json
 import random
 import os
 
@@ -12,16 +14,15 @@ from config import config
 logger = logging.getLogger(__name__)
 
 class BRICSGenerator:
-    def __init__(self, random_seed: int = None, limit: int = None, similarity_threshold: float = None):
+    def __init__(self, random_seed: int = None, limit: int = None):
         self.random_seed = random_seed if random_seed is not None else config.GENERATOR_SEED
         self.limit = limit if limit is not None else config.GENERATOR_LIMIT
-        self.similarity_threshold = similarity_threshold if similarity_threshold is not None else config.DIVERSITY_SIMILARITY_THRESHOLD
         random.seed(self.random_seed)
         
     def generate(self, input_df: pd.DataFrame) -> pd.DataFrame:
         """
         Takes a dataframe with 'molecule_chembl_id' and 'canonical_smiles'.
-        Fragments the molecules using BRICS, recombines them, and filters/deduplicates.
+        Fragments the molecules using BRICS, recombines them, and outputs up to self.limit valid/unique candidates.
         """
         logger.info(f"Starting BRICS generation from {len(input_df)} source molecules.")
         
@@ -58,6 +59,11 @@ class BRICSGenerator:
         # Step 3 & 4: Validity filtering, deduplication, and provenance tracking
         candidates = []
         seen_smiles = set()
+        
+        # Add original molecules to seen_smiles to filter knowns
+        for _, row in input_df.iterrows():
+            seen_smiles.add(row['canonical_smiles'])
+            
         generated_count = 0
         valid_count = 0
         duplicate_count = 0
@@ -81,23 +87,9 @@ class BRICSGenerator:
                 # Invalid molecule
                 continue
                 
-            # Deduplicate
+            # Deduplicate (including known molecules)
             if gen_smiles in seen_smiles:
                 duplicate_count += 1
-                continue
-                
-            # Compute fingerprint for diversity filtering
-            fp = AllChem.GetMorganFingerprintAsBitVect(gen_mol, radius=2, nBits=1024)
-            
-            # Diversity check against already accepted candidates
-            is_diverse = True
-            for c in candidates:
-                sim = DataStructs.TanimotoSimilarity(fp, c["fingerprint"])
-                if sim >= self.similarity_threshold:
-                    is_diverse = False
-                    break
-                    
-            if not is_diverse:
                 continue
                 
             seen_smiles.add(gen_smiles)
@@ -110,15 +102,14 @@ class BRICSGenerator:
                     parents.update(frag_to_parents[f])
                     
             parent_ids_str = ";".join(sorted(list(parents)))
-            candidate_id = f"GEN_{uuid.uuid4().hex[:8].upper()}"
+            candidate_id = f"GEN_{hashlib.sha256(gen_smiles.encode()).hexdigest()[:8].upper()}"
             
             candidates.append({
                 "candidate_id": candidate_id,
                 "smiles": gen_smiles,
                 "parent_ids": parent_ids_str,
                 "generation_method": "BRICS",
-                "validity_status": "VALID",
-                "fingerprint": fp
+                "validity_status": True
             })
             
             # Early stopping if we hit the limit after filtering
@@ -129,14 +120,24 @@ class BRICSGenerator:
         logger.info(f"Source molecules: {len(input_df)}")
         logger.info(f"Total generated (raw): {generated_count}")
         logger.info(f"Valid molecules: {valid_count}")
-        logger.info(f"Duplicates removed: {duplicate_count}")
+        logger.info(f"Duplicates/Known removed: {duplicate_count}")
         logger.info(f"Final candidates retained: {len(candidates)}")
         
-        # Remove fingerprint from output DF to keep it clean
+        # Save metadata
+        metadata = {
+            "source": "ChEMBL EGFR ligands",
+            "generation_method": "BRICS",
+            "raw_count": generated_count,
+            "valid_count": valid_count,
+            "duplicate_count": duplicate_count,
+            "final_count": len(candidates)
+        }
+        metadata_path = os.path.join(config.PROCESSED_DATA_DIR, "generation_metadata.json")
+        os.makedirs(os.path.dirname(metadata_path), exist_ok=True)
+        with open(metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=4)
+        
         df_out = pd.DataFrame(candidates)
-        if "fingerprint" in df_out.columns:
-            df_out = df_out.drop(columns=["fingerprint"])
-            
         return df_out
 
 if __name__ == "__main__":
@@ -149,18 +150,15 @@ if __name__ == "__main__":
         
     df_in = pd.read_csv(input_path)
     
-    # Run on a small subset as requested
-    subset = df_in.head(20)
-    
     generator = BRICSGenerator()
-    df_out = generator.generate(subset)
+    df_out = generator.generate(df_in)
     
     output_path = os.path.join(config.PROCESSED_DATA_DIR, "generated_candidates.csv")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df_out.to_csv(output_path, index=False)
     
     print("\n--- Generation Results ---")
-    print(f"Source molecules: {len(subset)}")
+    print(f"Source molecules: {len(df_in)}")
     print(f"Final candidates retained: {len(df_out)}")
     print("\nSample generated candidates:")
     print(df_out.head())

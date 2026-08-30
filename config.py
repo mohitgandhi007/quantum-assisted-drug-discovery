@@ -13,12 +13,16 @@ class Settings(BaseSettings):
     
     # Generator Settings
     GENERATOR_SEED: int = int(os.getenv("GENERATOR_SEED", "42"))
-    GENERATOR_LIMIT: int = int(os.getenv("GENERATOR_LIMIT", "100"))
+    GENERATOR_LIMIT: int = int(os.getenv("GENERATOR_LIMIT", "2000"))
     
     # Diversity Filtering Settings
     DIVERSITY_SIMILARITY_THRESHOLD: float = float(os.getenv("DIVERSITY_SIMILARITY_THRESHOLD", "0.85"))
+    DIVERSITY_LIMIT: int = int(os.getenv("DIVERSITY_LIMIT", "200"))
+    MW_MIN: float = float(os.getenv("MW_MIN", "200.0"))
+    MW_MAX: float = float(os.getenv("MW_MAX", "800.0"))
     
     # Docking Settings
+    DOCKING_LIMIT: int = int(os.getenv("DOCKING_LIMIT", "20"))
     VINA_PATH: str = os.getenv("VINA_PATH", "docking/bin/vina")
     RECEPTOR_PDBQT: str = os.getenv("RECEPTOR_PDBQT", "data/processed/receptor.pdbqt")
     DOCKING_CENTER_X: float = float(os.getenv("DOCKING_CENTER_X", "22.013689655172417"))

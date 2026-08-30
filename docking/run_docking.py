@@ -261,7 +261,7 @@ class HTVS:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     
-    input_path = os.path.join(config.PROCESSED_DATA_DIR, "scored_candidates.csv")
+    input_path = os.path.join(config.PROCESSED_DATA_DIR, "diverse_candidates.csv")
     if not os.path.exists(input_path):
         print(f"Error: {input_path} not found.")
         exit(1)
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     
     htvs = HTVS()
     
-    df_results = htvs.run_docking_batch(df_scored, limit=20)
+    df_results = htvs.run_docking_batch(df_scored, limit=config.DOCKING_LIMIT)
     
     output_path = os.path.join(config.PROCESSED_DATA_DIR, "binding_evidence.csv")
     df_results.to_csv(output_path, index=False)

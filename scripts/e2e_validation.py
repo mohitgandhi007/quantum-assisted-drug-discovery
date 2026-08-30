@@ -28,6 +28,7 @@ def main():
     run_command("python -m data_pipeline.chembl_fetcher", "ChEMBL Ingestion")
     run_command("python -m chemistry.generator", "BRICS Generation")
     run_command("python -m chemistry.scoring", "QED/ESOL/PAINS Scoring")
+    run_command("python -m chemistry.diversity", "Diversity Selection")
     run_command("python -m docking.run_docking", "Docking / Fallback")
     run_command("python -m chemistry.ranking", "Classical Ranking")
     print("\n--- Skipping Full QAOA Simulation (Using cached mock due to 20-qubit constraints) ---")

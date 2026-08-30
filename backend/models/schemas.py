@@ -51,3 +51,36 @@ class PipelineStatus(BaseModel):
     message: str
     is_cached: bool
     total_candidates_available: int
+
+class TargetSchema(BaseModel):
+    name: str
+    pdb: str
+    source: str
+    mode: str
+
+class PipelineStageSchema(BaseModel):
+    name: str
+    status: str
+    message: str
+    details: Optional[Dict[str, Any]] = None
+
+class PipelineSummarySchema(BaseModel):
+    input_ligands: int
+    generated: int
+    valid: int
+    diverse: int
+    property_passed: int
+    docked: int
+    failed_docking: int
+    classical_top: int
+    quantum_selected: int
+
+class DetailedPipelineResponse(BaseModel):
+    run_id: str
+    status: str
+    target: TargetSchema
+    stages: List[PipelineStageSchema]
+    summary: PipelineSummarySchema
+    candidates: List[CandidateResponse]
+    quantum: Optional[QuantumResultResponse] = None
+    errors: List[str]

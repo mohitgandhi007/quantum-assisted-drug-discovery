@@ -57,10 +57,11 @@ export const mockCandidates = [
 ];
 
 export const mockPipelineStages = [
-  { id: "research", label: "Research", description: "Target receptor characterization and literature embedding alignment." },
-  { id: "generation", label: "Generation", description: "Deep generative RNN creating target-specific candidates." },
-  { id: "properties", label: "Properties", description: "Evaluating drug-likeness (QED), solubility (ESOL), and ADMET flags." },
-  { id: "docking", label: "Docking", description: "Autodock Vina protein-ligand binding affinity simulations (EGFR)." },
-  { id: "quantum", label: "Quantum", description: "Qiskit-optimized screening of final candidate configurations." },
-  { id: "explanation", label: "Explanation", description: "Natural language synthesis of properties, safety, and binding actions." }
+  { id: "target", label: "Target", description: "EGFR receptor • PDB 1M17" },
+  { id: "generation", label: "Molecular Generation", description: "BRICS fragment-based generation" },
+  { id: "properties", label: "Molecular Properties", description: "QED • ESOL • PAINS" },
+  { id: "docking", label: "Docking", description: "AutoDock Vina / Tanimoto similarity proxy" },
+  { id: "ranking", label: "Classical Ranking", description: "Multi-objective prioritization" },
+  { id: "quantum", label: "Quantum Optimization", description: "QUBO + QAOA" },
+  { id: "explanation", label: "AI Explanation", description: "Candidate analysis" }
 ];

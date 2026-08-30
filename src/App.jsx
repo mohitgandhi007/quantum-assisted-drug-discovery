@@ -1,302 +1,319 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
-import PipelineStages from './components/PipelineStages';
 import CandidateTable from './components/CandidateTable';
-import MoleculeViewer from './components/MoleculeViewer';
 import EmptyState from './components/EmptyState';
-import { mockPipelineStages } from './api/mockData';
-import { getCandidates, USE_MOCK } from './api/api';
+import TargetOverview from './components/StageViews/TargetOverview';
+import PipelineSummary from './components/StageViews/PipelineSummary';
+import LivePipeline from './components/StageViews/LivePipeline';
+import StageDetails from './components/StageViews/StageDetails';
+import RunHistory from './components/StageViews/RunHistory';
+import { runPipeline, getCandidateDetails, USE_MOCK, API_BASE_URL } from './api/api';
 
 export default function App() {
-  const [candidates, setCandidates] = useState([]);
+  const [pipelineData, setPipelineData] = useState(null);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [isPipelineRunning, setIsPipelineRunning] = useState(false);
-  const [currentStageIndex, setCurrentStageIndex] = useState(-1);
-  const [loading, setLoading] = useState(false);
+  
+  // 'READY', 'RUNNING', 'COMPLETED', 'ERROR'
+  const [appStatus, setAppStatus] = useState('READY'); 
+  const [activeStageIndex, setActiveStageIndex] = useState(-1);
   const [error, setError] = useState(null);
   const [logs, setLogs] = useState([]);
-
-  // Generate automated clinical explanation for the selected candidate
-  const getExplanation = (candidate) => {
-    if (!candidate) return '';
-    switch (candidate.id) {
-      case 'c1':
-        return 'COMP-C1 is the primary lead candidate. It is a Gefitinib-like structure predicted to fit cleanly into the EGFR tyrosine kinase active site (PDB: 1M17). It establishes strong hydrogen bonding networks with Met793. Highly favorable drug-likeness and complete absence of toxicity flags make it an excellent candidate for synthesis.';
-      case 'c2':
-        return 'COMP-C2 is a Lapatinib analogue showing high binding affinity. However, it displays a higher molecular weight (MW > 500) and slightly reduced solubility, resulting in a "High MW" flag. It remains a backup lead compound.';
-      case 'c3':
-        return 'COMP-C3 resembles Afatinib, showing irreversible binding kinetics. No critical toxicity flags were detected, and it shows balanced drug-likeness (QED = 0.72) and ESOL solubility (-3.5).';
-      case 'c4':
-        return 'COMP-C4 is an Osimertinib-like compound designed to target EGFR T790M resistance mutations. It shows strong docking score (-8.1) but carries a minor hepatotoxicity risk flagging, requiring structural modifications.';
-      case 'c5':
-        return 'COMP-C5 is an Erlotinib derivative. It shows the highest drug-likeness index (QED = 0.81) and excellent solubility (-2.9). However, models flagged mutagenic potential in high concentrations, which may limit development.';
-      default:
-        return 'Structure profiling in progress.';
-    }
-  };
 
   const addLog = (message) => {
     setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`]);
   };
 
-  const handleStartDiscovery = () => {
-    setIsPipelineRunning(true);
-    setCandidates([]);
+  const handleStartDiscovery = async () => {
+    setAppStatus('RUNNING');
+    setPipelineData(null);
     setSelectedCandidate(null);
-    setCurrentStageIndex(0);
+    setActiveStageIndex(-1);
     setError(null);
     setLogs([]);
 
-    addLog('SYSTEM: Initializing EGFR receptor lead optimization pipeline.');
-    addLog('RESEARCH: Querying RCSB database for target structure: PDB 1M17.');
-  };
-
-  // Pipeline simulation timeouts
-  useEffect(() => {
-    if (!isPipelineRunning) return;
-
-    let timer;
-    const stageDurations = [1200, 1500, 1200, 1800, 1500, 1200];
+    addLog('SYSTEM: Initializing QUANTOVIA EGFR lead optimization pipeline.');
     
-    const runNextStage = (index) => {
-      if (index >= mockPipelineStages.length) {
-        // Pipeline completed. Fetch final candidates.
-        setLoading(true);
-        addLog('SYSTEM: Pipeline completed. Fetching lead candidate details...');
-        
-        getCandidates()
-          .then((data) => {
-            setCandidates(data);
-            // Default select the top rank candidate (or quantum selected)
-            const defaultSelected = data.find((c) => c.quantum_selected) || data[0];
-            setSelectedCandidate(defaultSelected);
-            addLog('SYSTEM: Successfully loaded candidate structures and scores.');
-            setLoading(false);
-          })
-          .catch((err) => {
-            setError(err.message);
-            addLog(`ERROR: ${err.message}`);
-            setLoading(false);
-          })
-          .finally(() => {
-            setIsPipelineRunning(false);
-          });
+    // In a real app we'd poll or use websockets. Here we simulate visual progress before hitting backend.
+    let visualIndex = 0;
+    const stageDurations = [800, 1000, 1000, 1000, 800, 1200, 800];
+    
+    // We'll create a fake "running" stages array to show progress
+    const runningStages = [
+      { name: 'Target Validation', status: 'PENDING' },
+      { name: 'Molecular Generation', status: 'PENDING' },
+      { name: 'Molecular Properties', status: 'PENDING' },
+      { name: 'Docking Simulation', status: 'PENDING' },
+      { name: 'Classical Ranking', status: 'PENDING' },
+      { name: 'Quantum Optimization', status: 'PENDING' },
+      { name: 'AI Explanation', status: 'PENDING' }
+    ];
+
+    setPipelineData({ stages: runningStages });
+
+    const runVisualStages = async () => {
+      if (visualIndex >= stageDurations.length) {
+        addLog('SYSTEM: Pipeline stages simulated. Fetching real results from backend...');
+        try {
+          const data = await runPipeline();
+          setPipelineData(data);
+          
+          if (data.candidates && data.candidates.length > 0) {
+            const defaultSelected = data.candidates.find((c) => c.quantum_selection_status) || data.candidates[0];
+            const fullDetails = await getCandidateDetails(defaultSelected.candidate_id);
+            setSelectedCandidate(fullDetails || defaultSelected);
+          }
+          
+          addLog('SYSTEM: Successfully loaded candidate structures and multi-objective scores.');
+          setAppStatus('COMPLETED');
+          setActiveStageIndex(0); // Select the first stage to view
+        } catch (err) {
+          setError(err.message);
+          addLog(`ERROR: ${err.message}`);
+          setAppStatus('ERROR');
+        }
         return;
       }
 
-      timer = setTimeout(() => {
-        const nextIndex = index + 1;
-        setCurrentStageIndex(nextIndex);
+      setActiveStageIndex(visualIndex);
+      
+      setPipelineData(prev => {
+        if (!prev) return prev;
+        const newStages = [...prev.stages];
+        if (visualIndex > 0) newStages[visualIndex - 1].status = 'COMPLETED';
+        newStages[visualIndex].status = 'RUNNING';
+        return { ...prev, stages: newStages };
+      });
 
-        // Add scientific logs corresponding to each stage transistion
-        switch (nextIndex) {
-          case 1:
-            addLog('RESEARCH: Receptor target loaded. Target pocket coordinates mapped.');
-            addLog('GENERATION: Launching deep generative chemistry models.');
-            break;
-          case 2:
-            addLog('GENERATION: Sampled 10,000 chemical SMILES. Filtered top 100.');
-            addLog('PROPERTIES: Calculating ADMET profiles, QED scores, and ESOL solubility.');
-            break;
-          case 3:
-            addLog('PROPERTIES: Filtered candidates to top 5 based on solubility and drug-likeness.');
-            addLog('DOCKING: Initiating Autodock Vina binding affinity calculations.');
-            break;
-          case 4:
-            addLog('DOCKING: Finished docking simulations. Scores ranges from -7.8 to -9.4 kcal/mol.');
-            addLog('QUANTUM: Offloading lead configuration configurations to Qiskit-Quantum simulator.');
-            break;
-          case 5:
-            addLog('QUANTUM: Pocket-fitting completed. Quantum stage selected COMP-C1.');
-            addLog('EXPLANATION: Formatting properties, toxicity profiles, and clinical explanations.');
-            break;
-          default:
-            break;
-        }
+      switch (visualIndex) {
+        case 0:
+          addLog('TARGET: PDB 1M17 loaded. Generating binding pocket representations.');
+          break;
+        case 1:
+          addLog('GENERATION: Running BRICS fragmentation and recombination.');
+          break;
+        case 2:
+          addLog('PROPERTIES: Filtering valid SMILES via RDKit. Calculating QED, ESOL, and PAINS alerts.');
+          break;
+        case 3:
+          addLog('DOCKING: Aligning structures. Calculating binding affinity proxies.');
+          break;
+        case 4:
+          addLog('RANKING: Applying multi-objective classical scoring function.');
+          break;
+        case 5:
+          addLog('QUANTUM: Formulating QUBO. Offloading QAOA simulation to Qiskit backend.');
+          break;
+        case 6:
+          addLog('EXPLANATION: Aggregating clinical explanations for top selected structures.');
+          break;
+        default:
+          break;
+      }
 
-        runNextStage(nextIndex);
-      }, stageDurations[index]);
+      setTimeout(() => {
+        visualIndex++;
+        runVisualStages();
+      }, stageDurations[visualIndex]);
     };
 
-    runNextStage(0);
+    runVisualStages();
+  };
 
-    return () => clearTimeout(timer);
-  }, [isPipelineRunning]);
+  const handleCandidateSelect = async (candidate) => {
+    try {
+      const fullDetails = await getCandidateDetails(candidate.candidate_id);
+      setSelectedCandidate(fullDetails || candidate);
+    } catch (e) {
+      console.error(e);
+      setSelectedCandidate(candidate);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* Header component */}
-      <Header isMock={USE_MOCK} />
+    <div className="min-h-screen bg-slate-950 text-quantovia-off-white flex flex-col font-sans">
+      <Header isMock={USE_MOCK} status={appStatus} />
 
-      {/* Main Layout Grid */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Column - Inputs & Pipeline Control */}
-        <section className="lg:col-span-4 flex flex-col gap-6">
-          
-          {/* Target input section */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              📂 Discovery Input Specs
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs text-slate-500 font-semibold uppercase">Receptor Target</label>
-                <div className="mt-1 font-mono text-sm bg-slate-950 px-3 py-2 rounded border border-slate-800 text-cyan-400 font-bold">
-                  EGFR (Epidermal Growth Factor Receptor)
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs text-slate-500 font-semibold uppercase">Target PDB Structure</label>
-                <div className="mt-1 font-mono text-sm bg-slate-950 px-3 py-2 rounded border border-slate-800 text-cyan-400">
-                  1M17
-                </div>
-              </div>
-              <button
+        {/* Left Column - Pipeline Control & Timeline */}
+        <section className="lg:col-span-12 xl:col-span-4 flex flex-col gap-6">
+          <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg">
+             <button
                 onClick={handleStartDiscovery}
-                disabled={isPipelineRunning}
-                className={`w-full py-2.5 px-4 rounded-lg font-bold text-xs uppercase tracking-wider shadow transition duration-200 ${
-                  isPipelineRunning
-                    ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
-                    : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 hover:shadow-[0_0_10px_rgba(16,185,129,0.2)] cursor-pointer'
+                disabled={appStatus === 'RUNNING'}
+                className={`w-full py-3 px-4 rounded-lg font-bold text-sm uppercase tracking-wider shadow transition duration-200 ${
+                  appStatus === 'RUNNING'
+                    ? 'bg-quantovia-charcoal text-slate-500 border border-quantovia-charcoal cursor-not-allowed'
+                    : 'bg-quantovia-teal hover:bg-quantovia-deep-teal text-quantovia-off-white hover:shadow-[0_0_15px_rgba(97,146,154,0.5)] cursor-pointer'
                 }`}
               >
-                {isPipelineRunning ? 'Discovery Active...' : 'Run Discovery Pipeline'}
+                {appStatus === 'RUNNING' ? 'PIPELINE ACTIVE...' : '▶ RUN DISCOVERY PIPELINE'}
               </button>
-            </div>
           </div>
 
-          {/* Pipeline stages checklist */}
-          <PipelineStages
-            stages={mockPipelineStages}
-            currentStageIndex={currentStageIndex}
-            isRunning={isPipelineRunning}
-          />
+          {pipelineData?.target && <TargetOverview target={pipelineData.target} />}
+          
+          {pipelineData?.stages && (
+            <LivePipeline 
+               stages={pipelineData.stages} 
+               activeStageIndex={activeStageIndex}
+               onStageClick={setActiveStageIndex}
+            />
+          )}
+
+          {pipelineData?.stages && activeStageIndex >= 0 && (
+             <StageDetails 
+                stage={pipelineData.stages[activeStageIndex]} 
+                candidates={pipelineData.candidates}
+                quantum={pipelineData.quantum}
+             />
+          )}
+
+          {/* Terminal / Logs */}
+          <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg flex flex-col h-64">
+             <div className="flex items-center justify-between mb-3 border-b border-quantovia-charcoal pb-2">
+               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                 <span className={`h-2 w-2 rounded-full ${appStatus === 'RUNNING' ? 'bg-quantovia-lime-sage animate-ping' : 'bg-slate-600'}`}></span>
+                 Pipeline Activity Log
+               </h3>
+             </div>
+             <div className="flex-1 bg-slate-950 rounded border border-quantovia-charcoal p-4 font-mono text-[10px] leading-relaxed text-slate-400 overflow-y-auto space-y-1.5 flex flex-col-reverse">
+               {appStatus === 'RUNNING' && (
+                 <div className="text-quantovia-lime-sage animate-pulse flex items-center gap-1 mt-2">
+                   <span>█</span> Processing node...
+                 </div>
+               )}
+               {[...logs].reverse().map((log, index) => {
+                 let logClass = 'text-slate-300';
+                 if (log.includes('ERROR')) logClass = 'text-rose-400';
+                 else if (log.includes('SYSTEM')) logClass = 'text-quantovia-lime-sage';
+                 else if (log.includes('QUANTUM')) logClass = 'text-cyan-400 font-bold';
+                 return (
+                   <div key={index} className={logClass}>
+                     {log}
+                   </div>
+                 );
+               })}
+             </div>
+          </div>
+          
+          <RunHistory />
+
         </section>
 
-        {/* Right Column - Results, Terminal Logs and 3D Visualizer */}
-        <section className="lg:col-span-8 flex flex-col gap-6">
+        {/* Right Column - Results */}
+        <section className="lg:col-span-12 xl:col-span-8 flex flex-col gap-6">
           
-          {/* Show empty state when pipeline hasn't run and no candidates exist */}
-          {!isPipelineRunning && candidates.length === 0 && !loading && !error && (
-            <EmptyState onStartDiscovery={handleStartDiscovery} isRunning={isPipelineRunning} />
+          {appStatus === 'READY' && (!pipelineData || !pipelineData.candidates) && (
+            <EmptyState />
           )}
 
-          {/* Error Message Panel */}
-          {error && (
-            <div className="bg-rose-950/20 border border-rose-800/40 rounded-xl p-6 text-center text-rose-400 shadow-lg">
-              <h3 className="font-bold text-sm">⚠ Discovery Pipeline Interrupted</h3>
-              <p className="text-xs text-slate-400 mt-1">{error}</p>
-              <button
-                onClick={handleStartDiscovery}
-                className="mt-4 px-4 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold text-rose-400 rounded border border-rose-500/30 transition cursor-pointer"
-              >
-                Retry Pipeline
-              </button>
-            </div>
-          )}
-
-          {/* Live Simulation Logs / Terminal Output */}
-          {(isPipelineRunning || logs.length > 0) && candidates.length === 0 && !error && (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex-1 flex flex-col min-h-[400px]">
-              <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2">
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span>
-                  Console Pipeline Logs
-                </h3>
-                <span className="text-[10px] font-mono text-cyan-400 px-2 py-0.5 rounded bg-cyan-400/5 border border-cyan-400/10">
-                  Active
-                </span>
-              </div>
-              <div className="flex-1 bg-slate-950 rounded border border-slate-800/80 p-4 font-mono text-[11px] leading-relaxed text-slate-400 overflow-y-auto space-y-1.5 max-h-[450px]">
-                {logs.map((log, index) => (
-                  <div key={index} className={log.includes('ERROR') ? 'text-rose-400' : log.includes('SYSTEM') ? 'text-emerald-400' : 'text-slate-300'}>
-                    {log}
-                  </div>
-                ))}
-                {isPipelineRunning && (
-                  <div className="text-cyan-400 animate-pulse flex items-center gap-1 mt-2">
-                    <span>█</span> Running calculation node...
-                  </div>
-                )}
+          {appStatus === 'ERROR' && (
+            <div className="bg-rose-950/20 border border-rose-800/40 rounded-xl p-6 text-rose-400 shadow-lg">
+              <h3 className="font-bold text-sm uppercase flex items-center gap-2">
+                <span>⚠</span> {pipelineData?.stages?.[activeStageIndex]?.name || 'PIPELINE'} FAILED
+              </h3>
+              <p className="text-xs text-slate-400 mt-2 p-3 bg-slate-950 border border-rose-900/50 rounded font-mono">
+                {error}
+              </p>
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={handleStartDiscovery}
+                  className="px-4 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold text-rose-400 rounded border border-rose-500/30 transition cursor-pointer"
+                >
+                  Retry Stage
+                </button>
+                <button
+                  onClick={handleStartDiscovery}
+                  className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded border border-slate-600 transition cursor-pointer"
+                >
+                  Use Fallback
+                </button>
               </div>
             </div>
           )}
 
-          {/* Loaded Lead Candidates Results Dashboard */}
-          {candidates.length > 0 && !error && (
+          {pipelineData?.summary && (
+            <PipelineSummary summary={pipelineData.summary} />
+          )}
+
+          {/* Candidates Dashboard */}
+          {appStatus === 'COMPLETED' && pipelineData?.candidates && !error && (
             <div className="flex flex-col gap-6">
               
-              {/* Candidates Table */}
               <CandidateTable
-                candidates={candidates}
+                candidates={pipelineData.candidates}
                 selectedCandidate={selectedCandidate}
-                onSelectCandidate={setSelectedCandidate}
+                onSelectCandidate={handleCandidateSelect}
               />
 
-              {/* Selected Candidate Detailed Inspection Grid */}
+              {/* Selected Candidate Detailed Inspection */}
               {selectedCandidate && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                   
-                  {/* Molecule 3D Visualizer */}
-                  <div className="h-[420px]">
-                    <MoleculeViewer pdbId="1M17" />
+                  {/* Molecule 2D Details */}
+                  <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg flex flex-col items-center justify-center relative min-h-[300px]">
+                    <span className="absolute top-4 left-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                      2D Structure Viewer
+                    </span>
+                    <div className="w-full h-48 bg-white/5 rounded mt-4 p-2 flex items-center justify-center">
+                       <img 
+                          src={`${API_BASE_URL}/molecule/image?smiles=${encodeURIComponent(selectedCandidate.smiles)}`}
+                          alt="2D Structure"
+                          className="max-w-full max-h-full object-contain mix-blend-screen invert opacity-90"
+                       />
+                    </div>
+                    <div className="w-full mt-4 bg-slate-950/60 border border-quantovia-charcoal rounded p-2 text-center break-all font-mono text-[10px] text-slate-400">
+                      {selectedCandidate.smiles}
+                    </div>
                   </div>
 
-                  {/* Properties and Bioinformatic Explanation Card */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-col justify-between">
+                  {/* Properties & Quantum Results */}
+                  <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
+                      <div className="flex items-center justify-between border-b border-quantovia-charcoal pb-3 mb-4">
                         <div>
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Selected Lead Details</span>
-                          <h3 className="text-base font-bold text-slate-200 font-mono mt-0.5">
-                            COMP-{selectedCandidate.id.toUpperCase()}
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Selected Lead</span>
+                          <h3 className="text-base font-bold text-quantovia-off-white font-mono mt-0.5">
+                            COMP-{selectedCandidate.candidate_id.split('-')[0].toUpperCase()}
                           </h3>
                         </div>
-                        {selectedCandidate.quantum_selected && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-400/15 text-cyan-400 border border-cyan-400/25">
-                            Quantum Prime Lead
+                        {selectedCandidate.quantum_selection_status && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-900/30 text-cyan-300 border border-cyan-700/50">
+                            QAOA Optimized ✓
                           </span>
                         )}
                       </div>
 
-                      {/* Bio-properties key value list */}
-                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs font-mono mb-6">
-                        <div className="text-slate-500">Docking Score:</div>
-                        <div className="text-right text-emerald-400 font-bold">{selectedCandidate.docking_score.toFixed(1)} kcal/mol</div>
+                      {/* Bio-properties list */}
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs font-mono mb-4">
+                        <div className="text-slate-500">Classical Score:</div>
+                        <div className="text-right text-quantovia-teal font-bold">{selectedCandidate.classical_score?.toFixed(3)}</div>
                         
                         <div className="text-slate-500">Drug-likeness (QED):</div>
-                        <div className="text-right text-slate-200">{selectedCandidate.qed.toFixed(2)}</div>
+                        <div className="text-right text-slate-200">{selectedCandidate.properties?.qed?.toFixed(2)}</div>
                         
                         <div className="text-slate-500">Solubility (ESOL):</div>
-                        <div className="text-right text-slate-200">{selectedCandidate.esol.toFixed(1)}</div>
+                        <div className="text-right text-slate-200">{selectedCandidate.properties?.esol?.toFixed(2)}</div>
                         
-                        <div className="text-slate-500">Toxicity Flags:</div>
-                        <div className="text-right">
-                          {selectedCandidate.tox_flags.length === 0 ? (
-                            <span className="text-emerald-400">None</span>
-                          ) : (
-                            <span className="text-rose-400">{selectedCandidate.tox_flags.join(', ')}</span>
-                          )}
+                        <div className="text-slate-500">Molecular Weight:</div>
+                        <div className="text-right text-slate-200">{selectedCandidate.properties?.molecular_weight?.toFixed(1)}</div>
+                        
+                        <div className="text-slate-500">Docking Source:</div>
+                        <div className="text-right text-slate-400">{selectedCandidate.binding_evidence?.method || 'N/A'}</div>
+                      </div>
+                      
+                      {/* Explanation block */}
+                      {selectedCandidate.explanation && (
+                         <div className="bg-slate-950/60 border border-quantovia-charcoal rounded-lg p-3 text-xs leading-relaxed">
+                          <h4 className="font-semibold text-slate-400 uppercase tracking-wider text-[10px] mb-1.5 flex items-center gap-1">
+                            🤖 AI Candidate Profile
+                          </h4>
+                          <p className="text-slate-300 whitespace-pre-wrap">
+                            {selectedCandidate.explanation}
+                          </p>
                         </div>
-
-                        <div className="text-slate-500">Overall Discovery Score:</div>
-                        <div className="text-right text-cyan-400 font-bold">{selectedCandidate.overall_score.toFixed(1)} / 100</div>
-                      </div>
-
-                      {/* AI explanation block */}
-                      <div className="bg-slate-950/60 border border-slate-800 rounded-lg p-3 text-xs leading-relaxed">
-                        <h4 className="font-semibold text-slate-400 uppercase tracking-wider text-[10px] mb-1.5 flex items-center gap-1">
-                          ✨ AI Explanation Profile
-                        </h4>
-                        <p className="text-slate-300">
-                          {getExplanation(selectedCandidate)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 text-[10px] text-slate-500">
-                      Structure loaded corresponds to ligand docking site on target protein receptor.
+                      )}
                     </div>
                   </div>
                   
@@ -308,9 +325,8 @@ export default function App() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-slate-900 bg-slate-950 px-6 py-4 text-center text-xs text-slate-600 font-mono">
-        © 2026 Hackathon AI Drug Discovery Project. Demo outputs only. Real validation requires wet lab trials.
+      <footer className="mt-auto border-t border-quantovia-charcoal bg-slate-950 px-6 py-4 text-center text-[11px] text-slate-600 font-mono tracking-wider">
+        © 2026 QUANTOVIA HACKATHON PROJECT. FOR DEMONSTRATION PURPOSES ONLY.
       </footer>
     </div>
   );

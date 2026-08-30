@@ -1,0 +1,8 @@
+{
+    "source": "ChEMBL EGFR ligands",
+    "generation_method": "BRICS",
+    "raw_count": 113,
+    "valid_count": 113,
+    "duplicate_count": 2,
+    "final_count": 111
+}

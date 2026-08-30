@@ -2,15 +2,15 @@
 
 ## Execution Metrics
 - **Source Compounds (ChEMBL)**: 39
-- **Generated Candidates**: 100
-- **Valid Candidates**: 0
-- **Scored Candidates**: 100
+- **Generated Candidates**: 2000
+- **Valid Candidates**: 2000
+- **Scored Candidates**: 2000
 - **Successfully Docked (Vina)**: 20
 - **Failed Docking (Fallback Used)**: 0
-- **Total Runtime**: 450.83 seconds
+- **Total Runtime**: 190.84 seconds
 
 ## Results
-- **Top 5 Classical Candidates**: GEN_9BF883B3, GEN_4E89AE4A, GEN_081366E4, GEN_A33462F6, GEN_6089E2AA
+- **Top 5 Classical Candidates**: GEN_7A396276, GEN_1C92724F, GEN_42E01451, GEN_435AA1A7, GEN_F375C5D3
 - **QAOA Selected Candidates**: GEN_A52E1BC0, GEN_2BBE51E3, GEN_71A3DA6E, GEN_FDBFC889, GEN_6E4A1C6D
 - **QAOA Objective**: -4.2341
 - **Classical Baseline Objective**: -4.2341

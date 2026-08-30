@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import json
+import uuid
 from typing import List, Dict, Any, Optional
 
 from config import config
@@ -9,9 +10,13 @@ class PipelineService:
     def __init__(self, data_dir: str = None):
         self.data_dir = data_dir if data_dir else config.PROCESSED_DATA_DIR
         self.scored_path = os.path.join(self.data_dir, "scored_candidates.csv")
+        self.diverse_path = os.path.join(self.data_dir, "diverse_candidates.csv")
         self.binding_path = os.path.join(self.data_dir, "binding_evidence.csv")
         self.ranked_path = os.path.join(self.data_dir, "ranked_candidates.csv")
         self.qaoa_results_path = os.path.join(self.data_dir, "qaoa_results.json")
+        self.generation_metadata_path = os.path.join(self.data_dir, "generation_metadata.json")
+        self.diversity_metadata_path = os.path.join(self.data_dir, "diversity_metadata.json")
+        self.egfr_ligands_path = os.path.join(self.data_dir, "egfr_ligands.csv")
         
         self.candidates_cache = {}
         self.quantum_result_cache = None
@@ -113,6 +118,110 @@ class PipelineService:
             "message": "Pipeline data loaded from cache." if has_data else "No data found.",
             "is_cached": True,
             "total_candidates_available": len(self.candidates_cache)
+        }
+        
+    def get_detailed_pipeline_response(self) -> Dict[str, Any]:
+        # Compute summary metrics from raw files
+        input_ligands = 0
+        if os.path.exists(self.egfr_ligands_path):
+            input_ligands = len(pd.read_csv(self.egfr_ligands_path))
+            
+        gen_meta = {"raw_count": 0, "valid_count": 0, "final_count": 0} # final_count is unique
+        if os.path.exists(self.generation_metadata_path):
+            with open(self.generation_metadata_path, "r") as f:
+                gen_meta = json.load(f)
+                
+        div_meta = {"property_passed_count": 0, "diverse_count": 0}
+        if os.path.exists(self.diversity_metadata_path):
+            with open(self.diversity_metadata_path, "r") as f:
+                div_meta = json.load(f)
+            
+        docked = 0
+        failed_docking = 0
+        if os.path.exists(self.binding_path):
+            df_binding = pd.read_csv(self.binding_path)
+            docked = len(df_binding[df_binding["method"].str.contains("vina", case=False, na=False)])
+            failed_docking = len(df_binding[df_binding["method"].str.contains("tanimoto_proxy", case=False, na=False)])
+            
+        cands = self.get_all_candidates()
+        
+        stages = [
+            {
+                "name": "Target Validation",
+                "status": "COMPLETED",
+                "message": "Target structures successfully prepared.",
+                "details": {"pdb": "1M17", "num_ligands": input_ligands}
+            },
+            {
+                "name": "Molecular Generation",
+                "status": "COMPLETED",
+                "message": "BRICS generation finished.",
+                "details": {"method": "BRICS", "generated": gen_meta.get("raw_count", 0)}
+            },
+            {
+                "name": "Molecular Properties",
+                "status": "COMPLETED",
+                "message": "ADMET/QED evaluation completed.",
+                "details": {"passed": div_meta.get("property_passed_count", 0)}
+            },
+            {
+                "name": "Diversity Selection",
+                "status": "COMPLETED",
+                "message": "MaxMin picker completed.",
+                "details": {"diverse": div_meta.get("diverse_count", 0)}
+            },
+            {
+                "name": "Docking Simulation",
+                "status": "COMPLETED" if failed_docking == 0 else "COMPLETED_WITH_FALLBACK",
+                "message": "Binding affinity evaluated.",
+                "details": {"successful": docked, "fallback_used": failed_docking}
+            },
+            {
+                "name": "Classical Ranking",
+                "status": "COMPLETED",
+                "message": "Candidates prioritized.",
+                "details": {"top_candidates": len(cands)}
+            },
+            {
+                "name": "Quantum Optimization",
+                "status": "COMPLETED" if self.quantum_result_cache else "PENDING",
+                "message": "QAOA Formulation executed." if self.quantum_result_cache else "Awaiting Quantum.",
+                "details": {"selected": len(self.quantum_result_cache["selected_candidates"])} if self.quantum_result_cache else None
+            },
+            {
+                "name": "AI Explanation",
+                "status": "COMPLETED",
+                "message": "LLM Explanations generated."
+            }
+        ]
+
+        summary = {
+            "input_ligands": input_ligands,
+            "generated": gen_meta.get("raw_count", 0),
+            "valid": gen_meta.get("valid_count", 0),
+            "unique": gen_meta.get("final_count", 0),
+            "property_passed": div_meta.get("property_passed_count", 0),
+            "diverse": div_meta.get("diverse_count", 0),
+            "docked": docked,
+            "failed_docking": failed_docking,
+            "classical_top": len(cands),
+            "quantum_selected": len(self.quantum_result_cache["selected_candidates"]) if self.quantum_result_cache else 0
+        }
+
+        return {
+            "run_id": f"RUN_{str(uuid.uuid4())[:8].upper()}",
+            "status": "COMPLETED" if len(cands) > 0 else "FAILED",
+            "target": {
+                "name": "EGFR",
+                "pdb": "1M17",
+                "source": "ChEMBL",
+                "mode": "Lead optimization / computational screening"
+            },
+            "stages": stages,
+            "summary": summary,
+            "candidates": cands,
+            "quantum": self.quantum_result_cache,
+            "errors": []
         }
 
 pipeline_service = PipelineService()

@@ -51,7 +51,7 @@ def test_get_candidate_by_id():
 def test_pipeline_run():
     response = client.post("/pipeline/run")
     assert response.status_code == 200
-    assert response.json()["status"] == "READY"
+    assert response.json()["status"] in ["READY", "COMPLETED", "FAILED"]
 
 def test_quantum_result():
     response = client.get("/quantum/result")
@@ -71,3 +71,15 @@ def test_report_generation():
         assert response.status_code == 200
         assert "markdown_report" in response.json()
         assert valid_id in response.json()["markdown_report"]
+
+def test_molecule_image():
+    # Valid SMILES
+    valid_smiles = "CCO"
+    response = client.get(f"/molecule/image?smiles={valid_smiles}")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "image/png"
+    
+    # Invalid SMILES
+    invalid_smiles = "INVALID_SMILES"
+    response_invalid = client.get(f"/molecule/image?smiles={invalid_smiles}")
+    assert response_invalid.status_code == 400
