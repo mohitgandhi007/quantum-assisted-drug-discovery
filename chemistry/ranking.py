@@ -2,18 +2,21 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 
+from config import config
+
 class ClassicalRanker:
-    def __init__(self, weights: Dict[str, float] = None, pains_penalty: float = 10.0):
+    def __init__(self, weights: Dict[str, float] = None, pains_penalty: float = None):
         """
         Initializes the ranker with configurable weights for the multi-objective scoring.
+        This produces a computational prioritization score, NOT a clinical efficacy metric.
         """
         # Default weights
         self.weights = weights if weights is not None else {
-            "qed": 1.0,
-            "esol": 0.5,
-            "binding": 2.0
+            "qed": config.WEIGHT_QED,
+            "esol": config.WEIGHT_ESOL,
+            "binding": config.WEIGHT_BINDING
         }
-        self.pains_penalty = pains_penalty
+        self.pains_penalty = pains_penalty if pains_penalty is not None else config.PAINS_PENALTY
 
     def _normalize_series(self, series: pd.Series, direction: str) -> pd.Series:
         """
@@ -96,8 +99,8 @@ if __name__ == "__main__":
     # Example usage reading from files
     import os
     
-    scored_path = "data/processed/scored_candidates.csv"
-    binding_path = "data/processed/binding_evidence.csv"
+    scored_path = os.path.join(config.PROCESSED_DATA_DIR, "scored_candidates.csv")
+    binding_path = os.path.join(config.PROCESSED_DATA_DIR, "binding_evidence.csv")
     
     if os.path.exists(scored_path) and os.path.exists(binding_path):
         df_s = pd.read_csv(scored_path)
@@ -106,7 +109,7 @@ if __name__ == "__main__":
         ranker = ClassicalRanker()
         df_ranked = ranker.rank_candidates(df_s, df_b)
         
-        output_path = "data/processed/ranked_candidates.csv"
+        output_path = os.path.join(config.PROCESSED_DATA_DIR, "ranked_candidates.csv")
         df_ranked.to_csv(output_path, index=False)
         
         print("\n--- Top 10 Ranked Candidates ---")

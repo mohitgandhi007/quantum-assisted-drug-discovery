@@ -8,22 +8,24 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
 
+from config import config
+
 logger = logging.getLogger(__name__)
 
 class HTVS:
     def __init__(
         self, 
-        receptor_pdbqt: str, 
-        center: List[float], 
-        size: List[float], 
-        vina_path: str,
+        receptor_pdbqt: str = None, 
+        center: List[float] = None, 
+        size: List[float] = None, 
+        vina_path: str = None,
         reference_smiles: Optional[List[str]] = None
     ):
-        self.receptor_pdbqt = receptor_pdbqt
-        self.center = center
-        self.size = size
-        self.vina_path = vina_path
-        self.reference_smiles = reference_smiles if reference_smiles else []
+        self.receptor_pdbqt = receptor_pdbqt if receptor_pdbqt else config.RECEPTOR_PDBQT
+        self.center = center if center else [config.DOCKING_CENTER_X, config.DOCKING_CENTER_Y, config.DOCKING_CENTER_Z]
+        self.size = size if size else [config.DOCKING_SIZE_X, config.DOCKING_SIZE_Y, config.DOCKING_SIZE_Z]
+        self.vina_path = vina_path if vina_path else config.VINA_PATH
+        self.reference_smiles = reference_smiles if reference_smiles else [config.REFERENCE_SMILES]
         
         # Pre-compute fingerprints for references for fast fallback calculation
         self.reference_fps = []
@@ -33,7 +35,7 @@ class HTVS:
                 fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius=2, nBits=2048)
                 self.reference_fps.append((smi, fp))
                 
-        self.output_dir = "data/docking_outputs"
+        self.output_dir = config.DOCKING_OUTPUT_DIR
         os.makedirs(self.output_dir, exist_ok=True)
 
     def pre_rank_candidates(self, df: pd.DataFrame, limit: int = 20) -> pd.DataFrame:
@@ -214,12 +216,12 @@ class HTVS:
                 pdbqt_path = self.prepare_ligand(cid, smiles)
                 dock_res = self.dock_ligand(pdbqt_path, cid)
                 
-                result_record["method"] = "AutoDock Vina (Docking)"
+                result_record["method"] = "vina"
                 result_record["score"] = dock_res["score"]
                 result_record["score_direction"] = "negative_is_better"
                 result_record["reference"] = self.receptor_pdbqt
                 result_record["status"] = "SUCCESS_VINA"
-                result_record["limitations"] = "Empirical scoring function; relies on static receptor conformation."
+                result_record["limitations"] = "AutoDock Vina score; empirical scoring function; relies on static receptor conformation."
                 result_record["docking_output_path"] = dock_res["output_path"]
                 success_vina_count += 1
                 logger.info(f"  Vina Success: {dock_res['score']} kcal/mol")
@@ -229,12 +231,12 @@ class HTVS:
                 logger.warning(f"  Vina Failed ({e}). Attempting Fallback...")
                 try:
                     fallback_res = self.compute_fallback_score(smiles)
-                    result_record["method"] = "Tanimoto Similarity (Proxy)"
+                    result_record["method"] = "tanimoto_proxy"
                     result_record["score"] = fallback_res["score"]
                     result_record["score_direction"] = "positive_is_better"
                     result_record["reference"] = fallback_res["reference"]
                     result_record["status"] = "SUCCESS_FALLBACK"
-                    result_record["limitations"] = "Not a physical docking score. Relies purely on 2D structural similarity to a known active reference."
+                    result_record["limitations"] = "Tanimoto similarity proxy. NOT a physical docking score or binding energy. Relies purely on 2D structural similarity to a known active reference."
                     result_record["error_message"] = f"Vina error: {e}" # Log why Vina failed
                     success_fallback_count += 1
                     logger.info(f"  Fallback Success: {fallback_res['score']} (Tanimoto)")
@@ -259,27 +261,18 @@ class HTVS:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     
-    input_path = "data/processed/scored_candidates.csv"
+    input_path = os.path.join(config.PROCESSED_DATA_DIR, "scored_candidates.csv")
     if not os.path.exists(input_path):
         print(f"Error: {input_path} not found.")
         exit(1)
         
     df_scored = pd.read_csv(input_path)
     
-    # Example reference: The AQ4 crystallographic ligand from 1M17
-    aq4_smiles = "Cc1cc(C)c(/C=C2\C(=O)Nc3ncnc(Nc4ccc(F)c(Cl)c4)c32)[nH]1"
-    
-    htvs = HTVS(
-        receptor_pdbqt="data/processed/receptor.pdbqt",
-        center=[22.013689655172417, 0.2528275862068965, 52.79403448275863],
-        size=[20, 20, 20],
-        vina_path=os.path.abspath("docking/bin/vina"),
-        reference_smiles=[aq4_smiles]
-    )
+    htvs = HTVS()
     
     df_results = htvs.run_docking_batch(df_scored, limit=20)
     
-    output_path = "data/processed/binding_evidence.csv"
+    output_path = os.path.join(config.PROCESSED_DATA_DIR, "binding_evidence.csv")
     df_results.to_csv(output_path, index=False)
     
     print("\n--- Evaluation Output Schema Sample ---")

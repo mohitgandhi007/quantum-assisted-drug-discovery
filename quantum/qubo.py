@@ -4,6 +4,8 @@ from typing import Dict, List, Tuple
 import itertools
 import math
 
+from config import config
+
 class CandidateQUBO:
     """
     Constructs a Quadratic Unconstrained Binary Optimization (QUBO) problem
@@ -39,6 +41,14 @@ class CandidateQUBO:
     
     Quadratic terms (off-diagonal elements):
     Q_{ij} = \beta S_{ij} + 2\gamma
+    
+    Proof that this exactly enforces k selections:
+    The penalty term \gamma (\sum_i x_i - k)^2 equals 0 if exactly k items are selected,
+    and is strictly > 0 otherwise. If we choose \gamma to be sufficiently large 
+    (i.e., \gamma > \alpha \max(Q_i) + \beta \max(S_{ij})), any solution that violates 
+    the k-constraint will incur a penalty larger than any possible benefit from the 
+    quality or similarity terms. Therefore, the global minimum of the QUBO MUST satisfy 
+    \sum_i x_i = k.
     """
     
     def __init__(
@@ -46,10 +56,10 @@ class CandidateQUBO:
         candidate_ids: List[str], 
         quality_scores: np.ndarray, 
         similarity_matrix: np.ndarray,
-        k: int = 5,
-        alpha: float = 1.0,
-        beta: float = 2.0,
-        gamma: float = 10.0
+        k: int = None,
+        alpha: float = None,
+        beta: float = None,
+        gamma: float = None
     ):
         """
         Initializes the QUBO constructor.
@@ -66,10 +76,10 @@ class CandidateQUBO:
         self.candidate_ids = candidate_ids
         self.quality_scores = quality_scores
         self.similarity_matrix = similarity_matrix
-        self.k = k
-        self.alpha = alpha
-        self.beta = beta
-        self.gamma = gamma
+        self.k = k if k is not None else config.QAOA_K
+        self.alpha = alpha if alpha is not None else config.QUBO_ALPHA
+        self.beta = beta if beta is not None else config.QUBO_BETA
+        self.gamma = gamma if gamma is not None else config.QUBO_GAMMA
         self.n = len(candidate_ids)
         
         self._validate_inputs()

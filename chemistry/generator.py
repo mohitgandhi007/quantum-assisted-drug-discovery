@@ -2,18 +2,23 @@ import logging
 import pandas as pd
 from typing import List, Dict, Set, Tuple
 from rdkit import Chem
-from rdkit.Chem import BRICS
+from rdkit.Chem import BRICS, AllChem, DataStructs
 import uuid
 import random
+import os
+
+from config import config
 
 logger = logging.getLogger(__name__)
 
 class BRICSGenerator:
-    def __init__(self, random_seed: int = 42):
-        self.random_seed = random_seed
+    def __init__(self, random_seed: int = None, limit: int = None, similarity_threshold: float = None):
+        self.random_seed = random_seed if random_seed is not None else config.GENERATOR_SEED
+        self.limit = limit if limit is not None else config.GENERATOR_LIMIT
+        self.similarity_threshold = similarity_threshold if similarity_threshold is not None else config.DIVERSITY_SIMILARITY_THRESHOLD
         random.seed(self.random_seed)
         
-    def generate(self, input_df: pd.DataFrame, limit: int = 100) -> pd.DataFrame:
+    def generate(self, input_df: pd.DataFrame) -> pd.DataFrame:
         """
         Takes a dataframe with 'molecule_chembl_id' and 'canonical_smiles'.
         Fragments the molecules using BRICS, recombines them, and filters/deduplicates.
@@ -58,10 +63,10 @@ class BRICSGenerator:
         duplicate_count = 0
         
         # Add a safety limit for iteration, BRICSBuild can yield massive numbers
-        max_iterations = limit * 50
+        max_iterations = self.limit * 50
         
         for i, gen_mol in enumerate(builder):
-            if i >= max_iterations or len(candidates) >= limit:
+            if i >= max_iterations or len(candidates) >= self.limit:
                 break
                 
             generated_count += 1
@@ -81,6 +86,20 @@ class BRICSGenerator:
                 duplicate_count += 1
                 continue
                 
+            # Compute fingerprint for diversity filtering
+            fp = AllChem.GetMorganFingerprintAsBitVect(gen_mol, radius=2, nBits=1024)
+            
+            # Diversity check against already accepted candidates
+            is_diverse = True
+            for c in candidates:
+                sim = DataStructs.TanimotoSimilarity(fp, c["fingerprint"])
+                if sim >= self.similarity_threshold:
+                    is_diverse = False
+                    break
+                    
+            if not is_diverse:
+                continue
+                
             seen_smiles.add(gen_smiles)
             
             # Re-decompose to find provenance
@@ -98,8 +117,13 @@ class BRICSGenerator:
                 "smiles": gen_smiles,
                 "parent_ids": parent_ids_str,
                 "generation_method": "BRICS",
-                "validity_status": "VALID"
+                "validity_status": "VALID",
+                "fingerprint": fp
             })
+            
+            # Early stopping if we hit the limit after filtering
+            if len(candidates) >= self.limit:
+                break
             
         logger.info(f"Generation complete.")
         logger.info(f"Source molecules: {len(input_df)}")
@@ -108,13 +132,17 @@ class BRICSGenerator:
         logger.info(f"Duplicates removed: {duplicate_count}")
         logger.info(f"Final candidates retained: {len(candidates)}")
         
-        return pd.DataFrame(candidates)
+        # Remove fingerprint from output DF to keep it clean
+        df_out = pd.DataFrame(candidates)
+        if "fingerprint" in df_out.columns:
+            df_out = df_out.drop(columns=["fingerprint"])
+            
+        return df_out
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    import os
     
-    input_path = "data/processed/egfr_ligands.csv"
+    input_path = os.path.join(config.PROCESSED_DATA_DIR, "egfr_ligands.csv")
     if not os.path.exists(input_path):
         print(f"Error: {input_path} not found.")
         exit(1)
@@ -124,10 +152,11 @@ if __name__ == "__main__":
     # Run on a small subset as requested
     subset = df_in.head(20)
     
-    generator = BRICSGenerator(random_seed=42)
-    df_out = generator.generate(subset, limit=100)
+    generator = BRICSGenerator()
+    df_out = generator.generate(subset)
     
-    output_path = "data/processed/generated_candidates.csv"
+    output_path = os.path.join(config.PROCESSED_DATA_DIR, "generated_candidates.csv")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df_out.to_csv(output_path, index=False)
     
     print("\n--- Generation Results ---")

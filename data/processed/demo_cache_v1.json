@@ -1,7 +1,7 @@
 {
   "metadata": {
     "pipeline_version": "1.0.0",
-    "timestamp_utc": "2026-08-29T17:02:35.254299+00:00",
+    "timestamp_utc": "2026-08-29T23:25:41.018044+00:00",
     "is_precomputed_demo": true,
     "demo_warning": "These displayed results are a precomputed computational run for demonstration purposes. They represent computational hypotheses and require experimental validation.",
     "configurations": {
@@ -16,16 +16,16 @@
       ],
       "docking_configuration": {
         "method": "AutoDock Vina (or Tanimoto similarity fallback)",
-        "receptor": "1M17",
+        "receptor": "data/processed/receptor.pdbqt",
         "search_space_center": [
-          22.61,
-          4.41,
-          52.83
+          22.013689655172417,
+          0.2528275862068965,
+          52.79403448275863
         ],
         "search_space_size": [
-          20,
-          20,
-          20
+          20.0,
+          20.0,
+          20.0
         ]
       },
       "quantum_configuration": {

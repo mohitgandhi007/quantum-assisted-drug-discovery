@@ -15,6 +15,7 @@ from qiskit_algorithms.optimizers import COBYLA, Optimizer
 from qiskit.primitives import StatevectorSampler
 
 from quantum.qubo import CandidateQUBO
+from config import config
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +28,15 @@ class QAOARunner:
     def __init__(
         self, 
         qubo: CandidateQUBO,
-        reps: int = 2,
+        reps: int = None,
         optimizer: Optimizer = None,
-        seed: int = 42
+        seed: int = None
     ):
         self.qubo = qubo
-        self.reps = reps
-        self.optimizer = optimizer if optimizer else COBYLA(maxiter=100)
-        self.seed = seed
-        self.sampler = StatevectorSampler(default_shots=1024, seed=seed)
+        self.reps = reps if reps is not None else config.QAOA_REPS
+        self.seed = seed if seed is not None else config.QAOA_SEED
+        self.optimizer = optimizer if optimizer else COBYLA(maxiter=config.QAOA_MAXITER)
+        self.sampler = StatevectorSampler(default_shots=1024, seed=self.seed)
         
     def _create_quadratic_program(self) -> QuadraticProgram:
         """
@@ -186,7 +187,7 @@ if __name__ == "__main__":
     # ---------------------------------------------------------
     # 2. Execution on Actual Top 20 Candidates
     # ---------------------------------------------------------
-    ranked_path = "data/processed/ranked_candidates.csv"
+    ranked_path = os.path.join(config.PROCESSED_DATA_DIR, "ranked_candidates.csv")
     if not os.path.exists(ranked_path):
         print(f"\nSkipping Test 2: {ranked_path} not found.")
         exit(0)
@@ -207,7 +208,7 @@ if __name__ == "__main__":
     
     # Re-fetch SMILES for the top20 (we can merge from scored_candidates if needed, 
     # but the ranked df usually lacks SMILES unless we kept it. Let's load scored_candidates).
-    df_scored = pd.read_csv("data/processed/scored_candidates.csv")
+    df_scored = pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "scored_candidates.csv"))
     top20 = pd.merge(top20, df_scored[["candidate_id", "smiles"]], on="candidate_id", how="left")
     smiles_list = top20["smiles"].tolist()
     

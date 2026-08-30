@@ -5,6 +5,8 @@ import json
 import pandas as pd
 import subprocess
 
+from config import config
+
 def run_command(cmd, step_name):
     print(f"\n--- Running Step: {step_name} ---")
     start = time.time()
@@ -40,16 +42,16 @@ def main():
     print("========================================\n")
     
     # 1. No fabricated scientific values & 3. Every docking result has a method
-    df_binding = pd.read_csv("data/processed/binding_evidence.csv")
+    df_binding = pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "binding_evidence.csv"))
     assert not df_binding["method"].isnull().any(), "Rule 3 Failed: Missing docking method"
     assert not df_binding["score"].isnull().any(), "Rule 1 Failed: Missing docking scores"
     
     # 2. Every candidate has provenance
-    df_gen = pd.read_csv("data/processed/generated_candidates.csv")
+    df_gen = pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "generated_candidates.csv"))
     assert not df_gen["parent_ids"].isnull().any(), "Rule 2 Failed: Missing provenance"
     
     # 4, 5, 6. QAOA Result feasible, classical baseline identical, exactly 5 selected
-    with open("data/processed/qaoa_results.json", "r") as f:
+    with open(os.path.join(config.PROCESSED_DATA_DIR, "qaoa_results.json"), "r") as f:
         q_results = json.load(f)
     assert len(q_results["selected_candidates"]) == 5, "Rule 6 Failed: Did not select exactly 5 candidates"
     assert q_results["classical_baseline"] is not None, "Rule 5 Failed: Missing classical baseline"
@@ -62,17 +64,17 @@ def main():
     print("Rule 10 verified: Script ran cleanly without manual intervention.")
     
     # Gather Report Metrics
-    num_source = len(pd.read_csv("data/processed/egfr_ligands.csv"))
+    num_source = len(pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "egfr_ligands.csv")))
     num_gen = len(df_gen)
     num_valid = len(df_gen[df_gen["validity_status"] == True])
     
-    df_scored = pd.read_csv("data/processed/scored_candidates.csv")
+    df_scored = pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "scored_candidates.csv"))
     num_scored = len(df_scored)
     
-    num_docked = len(df_binding[df_binding["method"].str.contains("Vina", na=False)])
-    num_failed_docking = len(df_binding[df_binding["method"].str.contains("fallback", case=False, na=False)])
+    num_docked = len(df_binding[df_binding["method"].str.contains("vina", case=False, na=False)])
+    num_failed_docking = len(df_binding[df_binding["method"].str.contains("tanimoto_proxy", case=False, na=False)])
     
-    df_ranked = pd.read_csv("data/processed/ranked_candidates.csv")
+    df_ranked = pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "ranked_candidates.csv"))
     top_cands = df_ranked.head(5)["candidate_id"].tolist()
     
     report_md = f"""# E2E Pipeline Validation Report
@@ -108,10 +110,11 @@ def main():
 These findings represent purely computational hypotheses and require experimental validation. Molecular docking and QAOA optimizations are computational models and are not guaranteed to reflect in vivo biological activity or human efficacy.
 """
 
-    with open("data/processed/validation_report.md", "w") as f:
+    report_path = os.path.join(config.PROCESSED_DATA_DIR, "validation_report.md")
+    with open(report_path, "w") as f:
         f.write(report_md)
         
-    print("\nALL ASSERTIONS PASSED! Validation report saved to 'data/processed/validation_report.md'.")
+    print(f"\nALL ASSERTIONS PASSED! Validation report saved to '{report_path}'.")
 
 if __name__ == "__main__":
     main()

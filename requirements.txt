@@ -16,3 +16,4 @@ httpx
 # Open Babel and Vina
 # openbabel # Requires SWIG and Eigen3 or Conda
 # vina      # Requires Boost library (brew install boost) or Conda
+pydantic-settings==2.7.1

@@ -1,16 +1,22 @@
 import logging
+import os
 import pandas as pd
 from typing import List, Dict, Optional
 from chembl_webresource_client.new_client import new_client
 from rdkit import Chem
 
+from config import config
+
 logger = logging.getLogger(__name__)
 
 class ChEMBLDataPipeline:
-    def __init__(self, output_path: str = "data/processed/egfr_ligands.csv"):
+    def __init__(self, output_path: str = None):
         self.target_api = new_client.target
         self.activity_api = new_client.activity
-        self.output_path = output_path
+        self.output_path = output_path or os.path.join(config.PROCESSED_DATA_DIR, "egfr_ligands.csv")
+        
+        # Ensure directories exist
+        os.makedirs(os.path.dirname(self.output_path), exist_ok=True)
 
     def get_egfr_target_id(self) -> str:
         """

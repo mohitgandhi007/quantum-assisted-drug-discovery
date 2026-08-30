@@ -107,18 +107,18 @@ class CandidateScorer:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     import os
+    from config import config
     
-    input_path = "data/processed/generated_candidates.csv"
+    input_path = os.path.join(config.PROCESSED_DATA_DIR, "generated_candidates.csv")
     if not os.path.exists(input_path):
         print(f"Error: {input_path} not found.")
         exit(1)
-        
     df_in = pd.read_csv(input_path)
     
     scorer = CandidateScorer()
     df_out = scorer.score_dataframe(df_in)
     
-    output_path = "data/processed/scored_candidates.csv"
+    output_path = os.path.join(config.PROCESSED_DATA_DIR, "scored_candidates.csv")
     df_out.to_csv(output_path, index=False)
     
     print("\n--- Scoring Results (Sample) ---")

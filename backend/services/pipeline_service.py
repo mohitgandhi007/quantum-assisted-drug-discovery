@@ -3,9 +3,11 @@ import pandas as pd
 import json
 from typing import List, Dict, Any, Optional
 
+from config import config
+
 class PipelineService:
-    def __init__(self, data_dir: str = "data/processed"):
-        self.data_dir = data_dir
+    def __init__(self, data_dir: str = None):
+        self.data_dir = data_dir if data_dir else config.PROCESSED_DATA_DIR
         self.scored_path = os.path.join(self.data_dir, "scored_candidates.csv")
         self.binding_path = os.path.join(self.data_dir, "binding_evidence.csv")
         self.ranked_path = os.path.join(self.data_dir, "ranked_candidates.csv")

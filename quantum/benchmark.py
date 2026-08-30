@@ -10,11 +10,12 @@ from rdkit import DataStructs
 from qiskit_algorithms.optimizers import COBYLA
 from quantum.qubo import CandidateQUBO
 from quantum.qaoa import QAOARunner, compute_similarity_matrix
+from config import config
 
 logger = logging.getLogger(__name__)
 
 def run_benchmark():
-    ranked_path = "data/processed/ranked_candidates.csv"
+    ranked_path = os.path.join(config.PROCESSED_DATA_DIR, "ranked_candidates.csv")
     if not os.path.exists(ranked_path):
         print("Ranked candidates not found. Run classical pipeline first.")
         return
@@ -25,7 +26,7 @@ def run_benchmark():
     quality_scores = np.maximum(top20["final_classical_score"].values, 0)
     
     # Need SMILES for similarity
-    df_scored = pd.read_csv("data/processed/scored_candidates.csv")
+    df_scored = pd.read_csv(os.path.join(config.PROCESSED_DATA_DIR, "scored_candidates.csv"))
     top20 = pd.merge(top20, df_scored[["candidate_id", "smiles"]], on="candidate_id", how="left")
     smiles_list = top20["smiles"].tolist()
     
@@ -35,10 +36,10 @@ def run_benchmark():
         candidate_ids=candidate_ids, 
         quality_scores=quality_scores, 
         similarity_matrix=sim_matrix, 
-        k=5, 
-        alpha=1.0, 
-        beta=1.5, 
-        gamma=20.0
+        k=config.QAOA_K, 
+        alpha=config.QUBO_ALPHA, 
+        beta=config.QUBO_BETA, 
+        gamma=config.QUBO_GAMMA
     )
     
     print("\n--- Running Classical Brute Force (Exact) ---")
@@ -68,13 +69,23 @@ def run_benchmark():
             if abs(s["obj_value"] - exact_obj) < 1e-4:
                 prob_optimal += s["probability"]
                 
+    overlap_count = len(set(exact_selected).intersection(set(q_selected)))
+    # For approximation ratio (assuming objective is strictly < 0 since it's a minimization problem with reward)
+    # Be careful with 0.
+    if exact_obj < 0:
+        approx_ratio = q_obj / exact_obj
+    else:
+        approx_ratio = 1.0 if abs(q_obj - exact_obj) < 1e-4 else float('nan')
+
     # Format table for output
     markdown_table = f"""
 | Metric | Classical (Exact) | QAOA (Simulated) |
 |---|---|---|
 | **Objective Value** | {exact_obj:.4f} | {q_obj:.4f} |
 | **Selected Candidates** | {', '.join(exact_selected)} | {', '.join(q_selected)} |
-| **Constraint Satisfied (k=5)** | {exact_feasible} | {q_feasible} |
+| **Constraint Satisfied (k={config.QAOA_K})** | {exact_feasible} | {q_feasible} |
+| **Overlap Count** | N/A | {overlap_count} / {config.QAOA_K} |
+| **Approximation Ratio** | 1.0000 | {approx_ratio:.4f} |
 | **Runtime (s)** | {time_c:.4f} | {time_q:.4f} |
 | **Optimal State Probability** | 100.0% | {prob_optimal:.4%} |
 | **Difference to Optimal** | 0.0 | {(q_obj - exact_obj):.4f} |
@@ -83,11 +94,11 @@ def run_benchmark():
     print("\n--- Benchmark Results ---")
     print(markdown_table)
     
-    with open("data/processed/qaoa_benchmark.md", "w") as f:
+    with open(os.path.join(config.PROCESSED_DATA_DIR, "qaoa_benchmark.md"), "w") as f:
         f.write("# QAOA vs Classical Exact Solver Benchmark\n")
         f.write(markdown_table)
         
-    print("Benchmark saved to data/processed/qaoa_benchmark.md")
+    print(f"Benchmark saved to {os.path.join(config.PROCESSED_DATA_DIR, 'qaoa_benchmark.md')}")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

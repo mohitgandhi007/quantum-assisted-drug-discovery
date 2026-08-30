@@ -55,7 +55,7 @@ class TestHTVS(unittest.TestCase):
         row = results.iloc[0]
         
         self.assertEqual(row["status"], "SUCCESS_VINA")
-        self.assertEqual(row["method"], "AutoDock Vina (Docking)")
+        self.assertEqual(row["method"], "vina")
         self.assertEqual(row["score"], -8.5)
         self.assertEqual(row["score_direction"], "negative_is_better")
         self.assertEqual(row["reference"], "dummy.pdbqt")
@@ -72,7 +72,7 @@ class TestHTVS(unittest.TestCase):
         row = results.iloc[0]
         
         self.assertEqual(row["status"], "SUCCESS_FALLBACK")
-        self.assertEqual(row["method"], "Tanimoto Similarity (Proxy)")
+        self.assertEqual(row["method"], "tanimoto_proxy")
         self.assertEqual(row["score"], 1.0) # Exact match to reference
         self.assertEqual(row["score_direction"], "positive_is_better")
         self.assertEqual(row["reference"], "c1ccccc1")

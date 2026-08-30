@@ -14,7 +14,7 @@ class TestBRICSGenerator(unittest.TestCase):
         self.generator = BRICSGenerator(random_seed=42)
 
     def test_generator_schema(self):
-        df_out = self.generator.generate(self.input_data, limit=5)
+        df_out = self.generator.generate(self.input_data)
         
         # Verify schema
         expected_cols = {"candidate_id", "smiles", "parent_ids", "generation_method", "validity_status"}
@@ -31,12 +31,13 @@ class TestBRICSGenerator(unittest.TestCase):
             self.assertIsNotNone(mol)
             
     def test_generator_limit(self):
-        df_out = self.generator.generate(self.input_data, limit=2)
+        self.generator.limit = 2
+        df_out = self.generator.generate(self.input_data)
         self.assertLessEqual(len(df_out), 2)
         
     def test_duplicate_removal(self):
         # Ensure that no duplicate SMILES are present in the output
-        df_out = self.generator.generate(self.input_data, limit=50)
+        df_out = self.generator.generate(self.input_data)
         num_smiles = len(df_out["smiles"])
         num_unique = len(df_out["smiles"].unique())
         self.assertEqual(num_smiles, num_unique)

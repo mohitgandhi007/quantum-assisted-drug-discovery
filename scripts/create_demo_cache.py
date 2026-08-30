@@ -5,11 +5,13 @@ import logging
 
 from backend.services.pipeline_service import pipeline_service
 from backend.services.explanation_service import explanation_service
+from config import config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def create_demo_cache(output_path: str = "data/processed/demo_cache_v1.json"):
+def create_demo_cache(output_path: str = None):
+    output_path = output_path or os.path.join(config.PROCESSED_DATA_DIR, "demo_cache_v1.json")
     logger.info("Initializing PipelineService to load all processed pipeline datasets...")
     pipeline_service.load_data()
     
@@ -37,21 +39,21 @@ def create_demo_cache(output_path: str = "data/processed/demo_cache_v1.json"):
             "is_precomputed_demo": True,
             "demo_warning": "These displayed results are a precomputed computational run for demonstration purposes. They represent computational hypotheses and require experimental validation.",
             "configurations": {
-                "dataset_source": "ChEMBL EGFR (Target ID: CHEMBL203)",
-                "molecular_generation": "RDKit BRICS (Deterministic seed: 42)",
+                "dataset_source": f"ChEMBL EGFR (Target ID: {config.TARGET_CHEMBL_ID})",
+                "molecular_generation": f"RDKit BRICS (Deterministic seed: {config.GENERATOR_SEED})",
                 "scoring_metrics": ["QED", "ESOL", "PAINS alerts", "MW", "LogP"],
                 "docking_configuration": {
                     "method": "AutoDock Vina (or Tanimoto similarity fallback)",
-                    "receptor": "1M17",
-                    "search_space_center": [22.61, 4.41, 52.83],
-                    "search_space_size": [20, 20, 20]
+                    "receptor": config.RECEPTOR_PDBQT,
+                    "search_space_center": [config.DOCKING_CENTER_X, config.DOCKING_CENTER_Y, config.DOCKING_CENTER_Z],
+                    "search_space_size": [config.DOCKING_SIZE_X, config.DOCKING_SIZE_Y, config.DOCKING_SIZE_Z]
                 },
                 "quantum_configuration": {
                     "formulation": "QUBO",
                     "solver": "QAOA",
                     "optimizer": "COBYLA",
-                    "p": 1,
-                    "seed": 42,
+                    "p": config.QAOA_REPS,
+                    "seed": config.QAOA_SEED,
                     "backend": "Qiskit StatevectorSampler (Local Simulator)"
                 }
             }
