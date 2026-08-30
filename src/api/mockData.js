@@ -6,6 +6,7 @@ export const mockCandidates = [
     esol: -3.2,
     tox_flags: [],
     docking_score: -9.4,
+    binding_method: "vina",
     quantum_selected: true,
     rank: 1,
     overall_score: 91.4,
@@ -20,6 +21,7 @@ export const mockCandidates = [
     esol: -3.8,
     tox_flags: [],
     docking_score: -9.2,
+    binding_method: "vina",
     quantum_selected: false,
     rank: 2,
     overall_score: 88.0,
@@ -30,11 +32,13 @@ export const mockCandidates = [
   },
   {
     id: "c2",
-    smiles: "CS(=O)(=O)CCNCC1OCCC1c2ccc(Oc3ccc4ncnc(Nc5ccc(Cl)c(Cl)c5)c4c3)o2", // Lapatinib-like structure
+    smiles: "CS(=O)(=O)CCNCC1OCCC1c2ccc(Oc3ccc4ncnc(Nc5ccc(Cl)c(Cl)c5)c4c3)o2", // Lapatinib-like structure (similarity proxy fallback)
     qed: 0.65,
     esol: -4.1,
     tox_flags: ["High MW"],
-    docking_score: -8.9,
+    docking_score: null,
+    binding_proxy: 0.82,
+    binding_method: "similarity_proxy",
     quantum_selected: false,
     rank: 3,
     overall_score: 85.2,
@@ -44,11 +48,12 @@ export const mockCandidates = [
   },
   {
     id: "c3",
-    smiles: "CN(C)CC=CC(=O)Nc1cc2c(cc1Oc3ccc(F)c(Cl)c3)ncnc2N4CCOCC4", // Afatinib-like structure
+    smiles: "CN(C)CC=CC(=O)Nc1cc2c(cc1Oc3ccc(F)c(Cl)c3)ncnc2N4CCOCC4", // Afatinib-like structure (Vina docking)
     qed: 0.72,
     esol: -3.5,
     tox_flags: [],
     docking_score: -8.5,
+    binding_method: "vina",
     quantum_selected: false,
     rank: 4,
     overall_score: 78.9,
@@ -58,11 +63,13 @@ export const mockCandidates = [
   },
   {
     id: "c4",
-    smiles: "COc1cc(N2CCN(C)CC2)c(NC(=O)C=C)cc1Nc3nccc(n3)c4cn(C)c5ccccc45", // Osimertinib-like structure
+    smiles: "COc1cc(N2CCN(C)CC2)c(NC(=O)C=C)cc1Nc3nccc(n3)c4cn(C)c5ccccc45", // Osimertinib-like structure (similarity proxy fallback)
     qed: 0.61,
     esol: -4.8,
     tox_flags: ["Hepatotoxicity risk", "quinone_A(370)"],
-    docking_score: -8.1,
+    docking_score: null,
+    binding_proxy: 0.72,
+    binding_method: "similarity_proxy",
     quantum_selected: false,
     rank: 5,
     overall_score: 72.6,
@@ -72,11 +79,13 @@ export const mockCandidates = [
   },
   {
     id: "c5",
-    smiles: "CC(C)Oc1cc2ncnc(Nc3ccc(Br)cc3F)c2cc1OCCCN4CCOCC4", // Erlotinib derivative
+    smiles: "CC(C)Oc1cc2ncnc(Nc3ccc(Br)cc3F)c2cc1OCCCN4CCOCC4", // Erlotinib derivative (pending docking calculation)
     qed: 0.81,
     esol: -2.9,
     tox_flags: ["Mutagenic potential"],
-    docking_score: -7.8,
+    docking_score: null,
+    binding_proxy: null,
+    binding_method: "pending",
     quantum_selected: false,
     rank: 6,
     overall_score: 68.1,

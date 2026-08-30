@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropertyCard from './PropertyCard';
+import DockingBadge from './DockingBadge';
 import { API_BASE_URL } from '../api/api';
 
 export default function CandidateDetails({ candidate }) {
@@ -216,20 +217,17 @@ export default function CandidateDetails({ candidate }) {
 
         {/* Scientific Predictive Placeholders */}
         <div className="grid grid-cols-2 gap-3 border-t border-slate-800 pt-3">
-          {/* Docking Placeholder */}
+          {/* Docking / Proxy Result */}
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
               Binding Energy Simulation
             </label>
-            <div className="bg-slate-950 px-3 py-2 rounded border border-slate-800/80">
-              <span className="text-[10px] text-slate-500 block uppercase font-mono">Docking score</span>
-              <span className={`text-xs font-mono font-bold mt-0.5 block ${
-                candidate.docking_score !== undefined ? 'text-emerald-400' : 'text-slate-500 italic'
-              }`}>
-                {candidate.docking_score !== undefined 
-                  ? `${candidate.docking_score.toFixed(1)} kcal/mol` 
-                  : 'Pending docking'}
-              </span>
+            <div className="bg-slate-950 px-3 py-2 rounded border border-slate-800/80 flex flex-col justify-center min-h-[52px]">
+              <DockingBadge 
+                dockingScore={candidate.docking_score} 
+                bindingProxy={candidate.binding_proxy} 
+                bindingMethod={candidate.binding_method} 
+              />
             </div>
           </div>
 

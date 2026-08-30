@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MoleculeImage from './MoleculeImage';
 import PropertyBadge from './PropertyBadge';
+import DockingBadge from './DockingBadge';
 
 export default function CandidateTable({ candidates, selectedCandidate, onSelectCandidate }) {
   const [sortField, setSortField] = useState('overall_score');
@@ -14,30 +15,51 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
     );
   }
 
+  // Determine if backend data represents the similarity proxy fallback
+  const isProxyMode = candidates.some(
+    (c) => c.binding_method === 'similarity_proxy' && (c.docking_score === null || c.docking_score === undefined)
+  );
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortField(field);
-      // Scientific default: Docking score best first (asc, e.g. -9.4 first), Overall score best first (desc, e.g. 91.4 first)
-      setSortDirection(field === 'docking_score' ? 'asc' : 'desc');
+      // For real docking score, more negative is better (default asc)
+      // For proxy/overall scores, higher is better (default desc)
+      const defaultDir = (field === 'docking_score' && !isProxyMode) ? 'asc' : 'desc';
+      setSortDirection(defaultDir);
     }
   };
 
   // Sort candidates copy based on field & direction
   const sortedCandidates = [...candidates].sort((a, b) => {
-    const valA = a[sortField];
-    const valB = b[sortField];
+    let valA = a[sortField];
+    let valB = b[sortField];
 
-    if (valA === undefined || valA === null) return 1;
-    if (valB === undefined || valB === null) return -1;
+    // If sorting by docking score but in proxy mode, compare binding_proxy values instead
+    if (sortField === 'docking_score' && isProxyMode) {
+      valA = a.binding_proxy;
+      valB = b.binding_proxy;
+    }
+
+    // Always put invalid/null/pending scores at the bottom regardless of sort direction
+    const isValAInvalid = valA === undefined || valA === null;
+    const isValBInvalid = valB === undefined || valB === null;
+
+    if (isValAInvalid && isValBInvalid) return 0;
+    if (isValAInvalid) return 1;
+    if (isValBInvalid) return -1;
 
     if (valA === valB) return 0;
 
-    if (sortDirection === 'asc') {
-      return valA > valB ? 1 : -1;
+    const isAscendingSort = sortDirection === 'asc';
+    const isLowerBetter = sortField === 'docking_score' && !isProxyMode;
+
+    if (isLowerBetter) {
+      return isAscendingSort ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     } else {
-      return valA < valB ? 1 : -1;
+      return isAscendingSort ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     }
   });
 
@@ -60,11 +82,15 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
             Screened Lead Candidates
           </h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Results ranked by computational metrics and binding affinity simulations. Click column headers to sort.
+            Results ranked by computational metrics. Click column headers to sort.
           </p>
         </div>
         <div className="text-xs text-slate-400 font-medium hidden md:block bg-slate-800/55 px-2.5 py-1 rounded border border-slate-700">
-          💡 <span className="text-slate-300">Tip:</span> More negative Docking Scores indicate stronger predicted binding.
+          {isProxyMode ? (
+            <span>💡 <strong>Binding similarity:</strong> Closer to 1.0 indicates higher Tanimoto similarity to Erlotinib reference.</span>
+          ) : (
+            <span>💡 <strong>Binding energy:</strong> More negative predicted Docking Scores indicate stronger binding.</span>
+          )}
         </div>
       </div>
 
@@ -77,10 +103,10 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
               <th className="py-3 px-4">Molecule Structure / SMILES</th>
               <th 
                 onClick={() => handleSort('docking_score')}
-                className="py-3 px-4 text-right cursor-pointer hover:bg-slate-900 transition-colors"
-                title="Sort by Docking Score"
+                className="py-3 px-4 text-right cursor-pointer hover:bg-slate-900 transition-colors w-48"
+                title={isProxyMode ? "Sort by Binding Similarity" : "Sort by Predicted Docking Score"}
               >
-                Docking Score {renderSortIndicator('docking_score')}
+                {isProxyMode ? 'Binding Similarity' : 'Docking Score'} {renderSortIndicator('docking_score')}
               </th>
               <th className="py-3 px-4 text-right">QED (Drug-likeness)</th>
               <th className="py-3 px-4 text-right">ESOL (Solubility)</th>
@@ -153,9 +179,13 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
                     </div>
                   </td>
 
-                  {/* Docking Score */}
-                  <td className="py-3 px-4 text-right font-mono font-semibold text-emerald-400">
-                    {candidate.docking_score.toFixed(1)} <span className="text-[10px] text-slate-500 font-normal">kcal/mol</span>
+                  {/* Docking Score or Proxy Badge */}
+                  <td className="py-3 px-4 text-right">
+                    <DockingBadge 
+                      dockingScore={candidate.docking_score} 
+                      bindingProxy={candidate.binding_proxy} 
+                      bindingMethod={candidate.binding_method} 
+                    />
                   </td>
 
                   {/* Drug-likeness (QED) using badge */}
@@ -177,7 +207,7 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2.5">
                       <span className="font-mono font-bold text-slate-200">
-                        {candidate.overall_score.toFixed(1)}
+                        {candidate.overall_score !== undefined ? candidate.overall_score.toFixed(1) : "N/A"}
                       </span>
                       <div className="w-12 bg-slate-800 rounded-full h-1.5 overflow-hidden hidden sm:block">
                         <div
@@ -188,7 +218,7 @@ export default function CandidateTable({ candidates, selectedCandidate, onSelect
                                 ? 'bg-cyan-400'
                                 : 'bg-slate-500'
                           }`}
-                          style={{ width: `${candidate.overall_score}%` }}
+                          style={{ width: `${candidate.overall_score || 0}%` }}
                         ></div>
                       </div>
                     </div>
