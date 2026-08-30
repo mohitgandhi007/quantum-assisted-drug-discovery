@@ -4,61 +4,61 @@ export default function Header({ isMock, status = 'READY' }) {
   // status: 'READY', 'RUNNING', 'COMPLETED', 'ERROR'
   
   const getStatusStyles = () => {
-    if (isMock) return 'bg-amber-500/10 border-amber-500/20 text-amber-400';
+    if (isMock) return 'bg-amber-100 border-amber-200 text-amber-700';
     switch (status) {
-      case 'RUNNING': return 'bg-quantovia-lime-sage/10 border-quantovia-lime-sage/30 text-quantovia-lime-sage';
-      case 'COMPLETED': return 'bg-quantovia-teal/10 border-quantovia-teal/30 text-quantovia-teal';
-      case 'ERROR': return 'bg-rose-500/10 border-rose-500/20 text-rose-400';
+      case 'RUNNING': return 'bg-quantovia-lime-sage/20 border-quantovia-lime-sage/40 text-quantovia-charcoal';
+      case 'COMPLETED': return 'bg-quantovia-teal/20 border-quantovia-teal/40 text-quantovia-forest';
+      case 'ERROR': return 'bg-rose-100 border-rose-200 text-rose-700';
       case 'READY':
       default:
-        return 'bg-quantovia-sage/10 border-quantovia-sage/30 text-quantovia-sage';
+        return 'bg-surface-200 border-surface-300 text-quantovia-sage';
     }
   };
 
   const getStatusDot = () => {
-    if (isMock) return 'bg-amber-400';
+    if (isMock) return 'bg-amber-500';
     switch (status) {
       case 'RUNNING': return 'bg-quantovia-lime-sage animate-pulse';
       case 'COMPLETED': return 'bg-quantovia-teal';
-      case 'ERROR': return 'bg-rose-400';
+      case 'ERROR': return 'bg-rose-500';
       case 'READY':
       default:
-        return 'bg-quantovia-sage';
+        return 'bg-quantovia-pale-sage';
     }
   };
 
   return (
-    <header className="border-b border-quantovia-charcoal bg-slate-950/80 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
+    <header className="border-b border-surface-300 bg-surface-100/90 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         {/* Title and Subtitle */}
         <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-lg bg-quantovia-deep-teal/20 border border-quantovia-deep-teal/50 flex items-center justify-center text-quantovia-teal font-mono font-bold text-lg shadow-inner">
+          <div className="h-10 w-10 rounded-lg bg-surface-200 border border-surface-300 flex items-center justify-center text-quantovia-teal font-serif italic font-bold text-xl">
             Q
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-quantovia-off-white tracking-tight flex items-center gap-2">
-              QUANTOVIA
-              <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-quantovia-charcoal/50 text-quantovia-pale-sage border border-quantovia-charcoal">
-                v1.0 • HACKATHON
+            <h1 className="text-xl md:text-2xl font-serif font-semibold text-quantovia-charcoal tracking-tight flex items-center gap-2">
+              Quantovia
+              <span className="text-[10px] font-sans font-medium px-2 py-0.5 rounded bg-surface-200 text-quantovia-sage border border-surface-300">
+                v1.0
               </span>
             </h1>
-            <p className="text-[11px] md:text-xs text-slate-400 mt-0.5 tracking-widest font-mono uppercase">
-              Molecules Today. Possibilities Tomorrow.
+            <p className="text-[11px] md:text-xs text-quantovia-sage mt-0.5 font-sans">
+              Computational Discovery Pipeline
             </p>
           </div>
         </div>
 
         {/* Status Indicators */}
-        <div className="flex items-center space-x-3 self-start md:self-auto text-xs font-mono">
-          <div className="flex items-center space-x-2 bg-quantovia-charcoal/30 px-3 py-1.5 rounded-md border border-quantovia-charcoal/50">
+        <div className="flex items-center space-x-3 self-start md:self-auto text-xs font-sans">
+          <div className="flex items-center space-x-2 bg-surface-100 px-3 py-1.5 rounded-md border border-surface-300 shadow-sm">
             <span className="h-2 w-2 rounded-full bg-quantovia-teal"></span>
-            <span className="text-slate-400">Target:</span>
-            <span className="text-quantovia-pale-sage font-bold">EGFR (1M17)</span>
+            <span className="text-quantovia-sage">Target:</span>
+            <span className="text-quantovia-charcoal font-semibold">EGFR (1M17)</span>
           </div>
 
-          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-md border ${getStatusStyles()}`}>
+          <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-md border shadow-sm ${getStatusStyles()}`}>
             <span className={`h-2 w-2 rounded-full ${getStatusDot()}`}></span>
-            <span className="font-medium uppercase tracking-wider">{isMock ? 'DEMO MODE' : status}</span>
+            <span className="font-medium uppercase tracking-wider text-[10px]">{isMock ? 'DEMO MODE' : status}</span>
           </div>
         </div>
       </div>

@@ -150,21 +150,21 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-quantovia-off-white flex flex-col font-sans">
+    <div className="min-h-screen flex flex-col font-sans bg-quantovia-off-white text-quantovia-charcoal">
       <Header isMock={USE_MOCK} status={appStatus} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Left Column - Pipeline Control & Timeline */}
         <section className="lg:col-span-12 xl:col-span-4 flex flex-col gap-6">
-          <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg">
+          <div className="bg-surface-100 border border-surface-300 rounded-xl p-5 shadow-sm">
              <button
                 onClick={handleStartDiscovery}
                 disabled={appStatus === 'RUNNING'}
-                className={`w-full py-3 px-4 rounded-lg font-bold text-sm uppercase tracking-wider shadow transition duration-200 ${
+                className={`w-full py-3 px-4 rounded-lg font-semibold text-sm uppercase tracking-wider shadow-sm transition duration-200 ${
                   appStatus === 'RUNNING'
-                    ? 'bg-quantovia-charcoal text-slate-500 border border-quantovia-charcoal cursor-not-allowed'
-                    : 'bg-quantovia-teal hover:bg-quantovia-deep-teal text-quantovia-off-white hover:shadow-[0_0_15px_rgba(97,146,154,0.5)] cursor-pointer'
+                    ? 'bg-surface-300 text-quantovia-sage border border-surface-300 cursor-not-allowed'
+                    : 'bg-quantovia-forest hover:bg-quantovia-deep-teal text-white cursor-pointer'
                 }`}
               >
                 {appStatus === 'RUNNING' ? 'PIPELINE ACTIVE...' : '▶ RUN DISCOVERY PIPELINE'}
@@ -190,24 +190,24 @@ export default function App() {
           )}
 
           {/* Terminal / Logs */}
-          <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg flex flex-col h-64">
-             <div className="flex items-center justify-between mb-3 border-b border-quantovia-charcoal pb-2">
-               <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                 <span className={`h-2 w-2 rounded-full ${appStatus === 'RUNNING' ? 'bg-quantovia-lime-sage animate-ping' : 'bg-slate-600'}`}></span>
+          <div className="bg-surface-100 border border-surface-300 rounded-xl p-5 shadow-sm flex flex-col h-64">
+             <div className="flex items-center justify-between mb-3 border-b border-surface-300 pb-2">
+               <h3 className="text-xs font-semibold text-quantovia-sage uppercase tracking-wider flex items-center gap-1.5">
+                 <span className={`h-2 w-2 rounded-full ${appStatus === 'RUNNING' ? 'bg-quantovia-teal animate-ping' : 'bg-surface-300'}`}></span>
                  Pipeline Activity Log
                </h3>
              </div>
-             <div className="flex-1 bg-slate-950 rounded border border-quantovia-charcoal p-4 font-mono text-[10px] leading-relaxed text-slate-400 overflow-y-auto space-y-1.5 flex flex-col-reverse">
+             <div className="flex-1 bg-surface-200 rounded-md border border-surface-300 p-4 font-mono text-[10px] leading-relaxed text-quantovia-sage overflow-y-auto space-y-1.5 flex flex-col-reverse shadow-inner">
                {appStatus === 'RUNNING' && (
-                 <div className="text-quantovia-lime-sage animate-pulse flex items-center gap-1 mt-2">
+                 <div className="text-quantovia-deep-teal animate-pulse flex items-center gap-1 mt-2">
                    <span>█</span> Processing node...
                  </div>
                )}
                {[...logs].reverse().map((log, index) => {
-                 let logClass = 'text-slate-300';
-                 if (log.includes('ERROR')) logClass = 'text-rose-400';
-                 else if (log.includes('SYSTEM')) logClass = 'text-quantovia-lime-sage';
-                 else if (log.includes('QUANTUM')) logClass = 'text-cyan-400 font-bold';
+                 let logClass = 'text-quantovia-charcoal';
+                 if (log.includes('ERROR')) logClass = 'text-rose-600 font-semibold';
+                 else if (log.includes('SYSTEM')) logClass = 'text-quantovia-teal';
+                 else if (log.includes('QUANTUM')) logClass = 'text-quantovia-deep-teal font-bold';
                  return (
                    <div key={index} className={logClass}>
                      {log}
@@ -229,23 +229,23 @@ export default function App() {
           )}
 
           {appStatus === 'ERROR' && (
-            <div className="bg-rose-950/20 border border-rose-800/40 rounded-xl p-6 text-rose-400 shadow-lg">
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-6 text-rose-700 shadow-sm">
               <h3 className="font-bold text-sm uppercase flex items-center gap-2">
                 <span>⚠</span> {pipelineData?.stages?.[activeStageIndex]?.name || 'PIPELINE'} FAILED
               </h3>
-              <p className="text-xs text-slate-400 mt-2 p-3 bg-slate-950 border border-rose-900/50 rounded font-mono">
+              <p className="text-xs text-rose-600 mt-2 p-3 bg-white border border-rose-100 rounded font-mono shadow-inner">
                 {error}
               </p>
               <div className="mt-4 flex gap-3">
                 <button
                   onClick={handleStartDiscovery}
-                  className="px-4 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-semibold text-rose-400 rounded border border-rose-500/30 transition cursor-pointer"
+                  className="px-4 py-1.5 bg-rose-100 hover:bg-rose-200 text-xs font-semibold text-rose-700 rounded border border-rose-200 transition cursor-pointer"
                 >
                   Retry Stage
                 </button>
                 <button
                   onClick={handleStartDiscovery}
-                  className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded border border-slate-600 transition cursor-pointer"
+                  className="px-4 py-1.5 bg-surface-200 hover:bg-surface-300 text-xs font-semibold text-quantovia-charcoal rounded border border-surface-300 transition cursor-pointer"
                 >
                   Use Fallback
                 </button>
@@ -272,34 +272,34 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                   
                   {/* Molecule 2D Details */}
-                  <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg flex flex-col items-center justify-center relative min-h-[300px]">
-                    <span className="absolute top-4 left-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <div className="bg-surface-100 border border-surface-300 rounded-xl p-5 shadow-sm flex flex-col items-center justify-center relative min-h-[300px]">
+                    <span className="absolute top-4 left-4 text-[10px] font-semibold text-quantovia-sage uppercase tracking-widest">
                       2D Structure Viewer
                     </span>
-                    <div className="w-full h-48 bg-white/5 rounded mt-4 p-2 flex items-center justify-center">
+                    <div className="w-full h-48 bg-white rounded mt-4 p-2 flex items-center justify-center">
                        <img 
                           src={`${API_BASE_URL}/molecule/image?smiles=${encodeURIComponent(selectedCandidate.smiles)}`}
                           alt="2D Structure"
-                          className="max-w-full max-h-full object-contain mix-blend-screen invert opacity-90"
+                          className="max-w-full max-h-full object-contain mix-blend-multiply opacity-100"
                        />
                     </div>
-                    <div className="w-full mt-4 bg-slate-950/60 border border-quantovia-charcoal rounded p-2 text-center break-all font-mono text-[10px] text-slate-400">
+                    <div className="w-full mt-4 bg-surface-200 border border-surface-300 rounded p-2 text-center break-all font-mono text-[10px] text-quantovia-sage shadow-inner">
                       {selectedCandidate.smiles}
                     </div>
                   </div>
 
                   {/* Properties & Quantum Results */}
-                  <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg flex flex-col justify-between">
+                  <div className="bg-surface-100 border border-surface-300 rounded-xl p-5 shadow-sm flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center justify-between border-b border-quantovia-charcoal pb-3 mb-4">
+                      <div className="flex items-center justify-between border-b border-surface-300 pb-3 mb-4">
                         <div>
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Selected Lead</span>
-                          <h3 className="text-base font-bold text-quantovia-off-white font-mono mt-0.5">
+                          <span className="text-[10px] font-semibold text-quantovia-sage uppercase tracking-widest">Selected Lead</span>
+                          <h3 className="text-base font-bold text-quantovia-charcoal font-mono mt-0.5">
                             COMP-{selectedCandidate.candidate_id.split('-')[0].toUpperCase()}
                           </h3>
                         </div>
                         {selectedCandidate.quantum_selection_status && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-900/30 text-cyan-300 border border-cyan-700/50">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-quantovia-teal/10 text-quantovia-forest border border-quantovia-teal/30">
                             QAOA Optimized ✓
                           </span>
                         )}
@@ -307,36 +307,36 @@ export default function App() {
 
                       {/* Bio-properties list */}
                       <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs font-mono mb-4">
-                        <div className="text-slate-500">Classical Score:</div>
-                        <div className="text-right text-quantovia-teal font-bold">{selectedCandidate.classical_score?.toFixed(3)}</div>
+                        <div className="text-quantovia-sage">Classical Score:</div>
+                        <div className="text-right text-quantovia-forest font-bold">{selectedCandidate.classical_score?.toFixed(3)}</div>
                         
-                        <div className="text-slate-500">Drug-likeness (QED):</div>
-                        <div className="text-right text-slate-200">{selectedCandidate.properties?.qed?.toFixed(2)}</div>
+                        <div className="text-quantovia-sage">Drug-likeness (QED):</div>
+                        <div className="text-right text-quantovia-charcoal">{selectedCandidate.properties?.qed?.toFixed(2)}</div>
                         
-                        <div className="text-slate-500">Solubility (ESOL):</div>
-                        <div className="text-right text-slate-200">{selectedCandidate.properties?.esol?.toFixed(2)}</div>
+                        <div className="text-quantovia-sage">Solubility (ESOL):</div>
+                        <div className="text-right text-quantovia-charcoal">{selectedCandidate.properties?.esol?.toFixed(2)}</div>
                         
-                        <div className="text-slate-500">Molecular Weight:</div>
-                        <div className="text-right text-slate-200">{selectedCandidate.properties?.molecular_weight?.toFixed(1)}</div>
+                        <div className="text-quantovia-sage">Molecular Weight:</div>
+                        <div className="text-right text-quantovia-charcoal">{selectedCandidate.properties?.molecular_weight?.toFixed(1)}</div>
                         
-                        <div className="text-slate-500">Docking Source:</div>
-                        <div className="text-right text-slate-400">{selectedCandidate.binding_evidence?.method || 'N/A'}</div>
+                        <div className="text-quantovia-sage">Docking Source:</div>
+                        <div className="text-right text-quantovia-sage">{selectedCandidate.binding_evidence?.method || 'N/A'}</div>
                       </div>
                       
                       {/* Explanation block */}
                       {selectedCandidate.explanation && (
-                         <div className="bg-slate-950/60 border border-quantovia-charcoal rounded-lg p-3 text-xs leading-relaxed">
+                         <div className="bg-surface-200 border border-surface-300 rounded-lg p-3 text-xs leading-relaxed shadow-inner">
                           <div className="flex items-center justify-between mb-1.5">
-                            <h4 className="font-semibold text-slate-400 uppercase tracking-wider text-[10px] flex items-center gap-1">
+                            <h4 className="font-semibold text-quantovia-sage uppercase tracking-wider text-[10px] flex items-center gap-1">
                               🤖 AI Candidate Profile
                             </h4>
                             {selectedCandidate.explanation_source && (
-                               <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${selectedCandidate.explanation_source.includes('AI') ? 'bg-indigo-900/40 text-indigo-300 border border-indigo-700/50' : 'bg-slate-800 text-slate-400 border border-slate-600'}`}>
+                               <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${selectedCandidate.explanation_source.includes('AI') ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-surface-300 text-quantovia-sage border border-surface-300'}`}>
                                  {selectedCandidate.explanation_source}
                                </span>
                             )}
                           </div>
-                          <p className="text-slate-300 whitespace-pre-wrap mt-2 border-t border-quantovia-charcoal/50 pt-2">
+                          <p className="text-quantovia-charcoal whitespace-pre-wrap mt-2 border-t border-surface-300/80 pt-2 font-serif text-sm">
                             {selectedCandidate.explanation}
                           </p>
                         </div>
@@ -352,8 +352,8 @@ export default function App() {
         </section>
       </main>
 
-      <footer className="mt-auto border-t border-quantovia-charcoal bg-slate-950 px-6 py-4 text-center text-[11px] text-slate-600 font-mono tracking-wider">
-        © 2026 QUANTOVIA HACKATHON PROJECT. FOR DEMONSTRATION PURPOSES ONLY.
+      <footer className="mt-auto border-t border-surface-300 bg-surface-100 px-6 py-4 text-center text-[11px] text-quantovia-sage font-sans tracking-wider">
+        © 2026 QUANTOVIA INC. COMPUTATIONAL DISCOVERY PLATFORM.
       </footer>
     </div>
   );

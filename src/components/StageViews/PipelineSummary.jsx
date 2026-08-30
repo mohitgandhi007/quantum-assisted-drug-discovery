@@ -19,17 +19,17 @@ export default function PipelineSummary({ summary }) {
   ];
 
   return (
-    <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg mb-6">
-      <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+    <div className="bg-surface-100 border border-surface-300 rounded-xl p-6 shadow-sm mb-6">
+      <h2 className="text-sm font-semibold text-quantovia-sage uppercase tracking-wider mb-4 flex items-center gap-2">
         📊 Pipeline Data Accounting
       </h2>
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
         {metrics.map((m, idx) => (
-          <div key={idx} className={`p-2 rounded-lg border ${m.quantum ? 'border-cyan-500/30 bg-cyan-900/10' : m.highlight ? 'border-teal-500/30 bg-teal-900/10' : 'border-slate-800 bg-slate-800/50'}`}>
-            <div className={`text-[10px] font-bold uppercase mb-1 ${m.quantum ? 'text-cyan-500' : m.highlight ? 'text-teal-400' : 'text-slate-500'}`}>
+          <div key={idx} className={`p-3 rounded-xl border ${m.quantum ? 'border-quantovia-teal/40 bg-quantovia-teal/10 shadow-sm' : m.highlight ? 'border-quantovia-teal/40 bg-quantovia-teal/10 shadow-sm' : 'border-surface-300 bg-surface-200'}`}>
+            <div className={`text-[10px] font-bold uppercase mb-1 ${m.quantum ? 'text-quantovia-forest' : m.highlight ? 'text-quantovia-forest' : 'text-quantovia-sage'}`}>
               {m.label}
             </div>
-            <div className={`font-mono text-lg ${m.quantum ? 'text-cyan-400 font-bold' : m.highlight ? 'text-quantovia-teal font-bold' : 'text-quantovia-off-white'}`}>
+            <div className={`font-mono text-xl ${m.quantum ? 'text-quantovia-charcoal font-bold' : m.highlight ? 'text-quantovia-charcoal font-bold' : 'text-quantovia-charcoal'}`}>
               {m.value}
             </div>
           </div>

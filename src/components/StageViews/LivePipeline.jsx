@@ -4,8 +4,8 @@ export default function LivePipeline({ stages, onStageClick, activeStageIndex })
   if (!stages || stages.length === 0) return null;
 
   return (
-    <div className="bg-slate-900 border border-quantovia-charcoal rounded-xl p-5 shadow-lg mb-6">
-      <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+    <div className="bg-surface-100 border border-surface-300 rounded-xl p-6 shadow-sm mb-6">
+      <h2 className="text-sm font-semibold text-quantovia-sage uppercase tracking-wider mb-4 flex items-center gap-2">
         ⏳ Live Pipeline Timeline
       </h2>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 overflow-x-auto pb-4 custom-scrollbar">
@@ -17,33 +17,33 @@ export default function LivePipeline({ stages, onStageClick, activeStageIndex })
           const isActive = activeStageIndex === idx;
 
           let statusIcon = '○';
-          let textColor = 'text-slate-500';
+          let textColor = 'text-quantovia-sage';
           if (isCompleted) {
             statusIcon = '✓';
             textColor = 'text-quantovia-teal';
           } else if (isFailed) {
             statusIcon = '⚠';
-            textColor = 'text-rose-400';
+            textColor = 'text-rose-600';
           } else if (isRunning) {
             statusIcon = '◉';
-            textColor = 'text-quantovia-lime-sage animate-pulse';
+            textColor = 'text-quantovia-forest animate-pulse';
           }
 
           if (stage.status === 'COMPLETED_WITH_FALLBACK') {
-             textColor = 'text-amber-400';
+             textColor = 'text-amber-600';
           }
 
           return (
             <div 
               key={idx} 
               onClick={() => onStageClick(idx)}
-              className={`flex-1 min-w-[120px] flex flex-col items-center text-center cursor-pointer p-2 rounded transition-colors ${isActive ? 'bg-white/5 border border-quantovia-charcoal' : 'hover:bg-white/5'}`}
+              className={`flex-1 min-w-[120px] flex flex-col items-center text-center cursor-pointer p-3 rounded-lg transition-colors ${isActive ? 'bg-surface-200 border border-surface-300 shadow-inner' : 'hover:bg-surface-200'}`}
             >
               <div className={`text-xl mb-1 ${textColor}`}>{statusIcon}</div>
               <div className={`text-[10px] font-bold uppercase tracking-wider ${textColor}`}>
                 {stage.name}
               </div>
-              <div className="text-[10px] text-slate-500 mt-1 line-clamp-2">
+              <div className="text-[10px] text-quantovia-sage mt-1 line-clamp-2">
                 {stage.message}
               </div>
             </div>
